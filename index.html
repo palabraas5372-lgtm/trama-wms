@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<title>TRAMA · Sistema de Gestión de Almacenes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="assets/css/styles.css" rel="stylesheet">
+</head>
+<body>
+<!-- Pantalla de login -->
+<div id="viewLogin" class="login-shell d-flex flex-column flex-lg-row">
+  <div class="login-brand">
+    <div>
+      <div class="brand-mark">
+        <svg class="needle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 20L15 9" stroke="#E8A33D" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="17.5" cy="6.5" r="3" stroke="#E8A33D" stroke-width="2"/>
+          <path d="M2.5 21.5L4.5 19.5" stroke="#E8A33D" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>TRAMA</span>
+      </div>
+      <div class="brand-sub mt-1">Distribución textil</div>
+    </div>
+
+    <div>
+      <h2 class="text-white mb-3" style="max-width:380px;">Un solo hilo conecta al almacén central con cada sucursal.</h2>
+      <p class="text-dim" style="max-width:380px;">Controla inventario, entradas, salidas y solicitudes de tus tiendas desde un mismo lugar.</p>
+      <div class="stitch-row mt-4">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="text-dim" style="font-size:.8rem;">© 2026 TRAMA S.A. — Almacén Central</div>
+  </div>
+
+  <div class="login-form-side">
+    <div class="login-card">
+      <span class="stitch-tag">Acceso al sistema</span>
+      <h1 class="fw-display mt-2 mb-1" style="font-size:1.6rem;">Iniciar sesión</h1>
+      <p class="text-muted-soft mb-4">Ingresa tus credenciales para entrar al panel del almacén.</p>
+
+      <form id="loginForm" novalidate>
+        <div class="mb-3">
+          <label for="usuario" class="form-label fw-semibold">Usuario</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control" id="usuario" placeholder="admin" autocomplete="username" required>
+          </div>
+        </div>
+        <div class="mb-2">
+          <label for="clave" class="form-label fw-semibold">Contraseña</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" id="clave" placeholder="••••••••" autocomplete="current-password" required>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="recordar">
+            <label class="form-check-label small text-muted-soft" for="recordar">Recordarme</label>
+          </div>
+          <a href="#" class="small text-decoration-none">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <div id="loginError" class="alert alert-danger py-2 small d-none" role="alert"></div>
+
+        <button type="submit" class="btn btn-denim w-100 py-2 fw-semibold">Ingresar</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Aplicación (visible solo después de iniciar sesión). El contenido de cada
+     módulo (Dashboard, Inventario, Movimientos, Sucursales) se carga aquí
+     dinámicamente desde assets/pages/*.html -->
+<div id="viewApp" class="app-shell d-none">
+
+  <!-- Sidebar: offcanvas de Bootstrap, fijo en desktop y deslizable en móvil -->
+  <div class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+    <div class="offcanvas-header d-lg-none">
+      <div class="brand-mark" id="sidebarOffcanvasLabel">
+        <svg class="needle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 20L15 9" stroke="#E8A33D" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="17.5" cy="6.5" r="3" stroke="#E8A33D" stroke-width="2"/>
+          <path d="M2.5 21.5L4.5 19.5" stroke="#E8A33D" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>TRAMA</span>
+      </div>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebarOffcanvas" aria-label="Cerrar"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="sidebar-head d-none d-lg-block">
+        <div class="brand-mark">
+          <svg class="needle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 20L15 9" stroke="#E8A33D" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="17.5" cy="6.5" r="3" stroke="#E8A33D" stroke-width="2"/>
+            <path d="M2.5 21.5L4.5 19.5" stroke="#E8A33D" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>TRAMA</span>
+        </div>
+        <div class="brand-sub mt-1">Almacén Central</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-link" data-page="dashboard">
+          <i class="bi bi-grid-1x2-fill"></i>Dashboard
+        </a>
+        <a href="#inventario" class="nav-link" data-page="inventario">
+          <i class="bi bi-box-seam"></i>Inventario
+        </a>
+        <a href="#movimientos" class="nav-link" data-page="movimientos">
+          <i class="bi bi-arrow-left-right"></i>Entradas / Salidas
+        </a>
+        <a href="#sucursales" class="nav-link" data-page="sucursales">
+          <i class="bi bi-shop"></i>Sucursales
+        </a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="fw-semibold text-white" data-user-name>Diego Contreras</div>
+        <div data-user-role>Jefe de Almacén</div>
+        <a href="#" class="text-dim d-inline-block mt-2 small" data-logout><i class="bi bi-box-arrow-right me-1"></i>Cerrar sesión</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+          <i class="bi bi-list"></i>
+        </button>
+        <div>
+          <span class="topbar-eyebrow" id="topbarEyebrow">Panel general</span>
+          <h1 id="topbarTitle">Dashboard</h1>
+        </div>
+      </div>
+      <button id="btnNuevoProducto" class="btn btn-thread btn-sm d-none" data-bs-toggle="modal" data-bs-target="#modalProducto">
+        <i class="bi bi-plus-lg me-1"></i>Nuevo producto
+      </button>
+    </header>
+
+    <!-- Contenedor de la página activa (cargado dinámicamente por app.js) -->
+    <div class="page-body" id="pageOutlet"></div>
+  </div>
+</div>
+
+<!-- Modal: nuevo producto (usado desde la página de Inventario) -->
+<div class="modal fade" id="modalProducto" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formProducto">
+        <div class="modal-header">
+          <h5 class="modal-title fw-display">Registrar nuevo producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Nombre del producto</label>
+            <input type="text" class="form-control" id="pNombre" required placeholder="Ej. Chaleco Acolchado">
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Categoría</label>
+              <input type="text" class="form-control" id="pCategoria" required placeholder="Ej. Casacas">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Talla</label>
+              <input type="text" class="form-control" id="pTalla" required placeholder="Ej. M">
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Color</label>
+              <input type="text" class="form-control" id="pColor" required placeholder="Ej. Azul Marino">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Código de color</label>
+              <input type="color" class="form-control form-control-color w-100" id="pHex" value="#2F4771">
+            </div>
+          </div>
+          <div class="row g-2">
+            <div class="col-4">
+              <label class="form-label small fw-semibold">Stock inicial</label>
+              <input type="number" class="form-control" id="pStock" min="0" required value="0">
+            </div>
+            <div class="col-4">
+              <label class="form-label small fw-semibold">Stock mínimo</label>
+              <input type="number" class="form-control" id="pMinimo" min="0" required value="10">
+            </div>
+            <div class="col-4">
+              <label class="form-label small fw-semibold">Ubicación</label>
+              <input type="text" class="form-control" id="pUbicacion" placeholder="A-01-01" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-denim btn-sm">Guardar producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: detalle de producto (abierto desde Inventario, botón "ojo") -->
+<div class="modal fade" id="modalDetalleProducto" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <span class="stitch-tag" id="detCodigo">TR-0000</span>
+          <h5 class="modal-title fw-display mt-1" id="detNombre">Producto</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3 mb-3" id="detMeta"></div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="mb-0">Nivel de stock</h6>
+          <span id="detEstado"></span>
+        </div>
+        <div class="progress mb-3" style="height:10px;">
+          <div class="progress-bar" id="detBarra" role="progressbar" style="width:0%"></div>
+        </div>
+        <h6 class="mb-2">Movimientos de este producto</h6>
+        <div class="table-responsive">
+          <table class="table table-trama mb-0">
+            <thead>
+              <tr><th>Fecha</th><th>Tipo</th><th>Cant.</th><th>Origen / Destino</th><th>Responsable</th></tr>
+            </thead>
+            <tbody id="detMovimientos"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="assets/js/core/data.js"></script>
+<script src="assets/js/core/utils.js"></script>
+<script src="assets/js/core/app.js"></script>
+</body>
+</html>

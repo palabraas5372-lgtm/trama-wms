@@ -1,0 +1,299 @@
+<section th:fragment="movimientos" id="pag-movimientos" class="d-none" data-modulo="movimientos">
+
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Movimientos</div>
+                        <div class="kpi-value" th:text="${movTotal}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:var(--fabric-2); color:var(--denim);">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">
+                    <span th:text="${movUnidades}">0</span> unidades en total
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Entradas</div>
+                        <div class="kpi-value" th:text="${movEntradas}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:var(--success-bg); color:var(--success);">
+                        <i class="bi bi-box-arrow-in-down"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">
+                    <span th:text="${'+' + movUnidadesEntrada}">+0</span> unidades ingresadas
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Salidas</div>
+                        <div class="kpi-value" th:text="${movSalidas}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:#E4EAF3; color:var(--denim);">
+                        <i class="bi bi-box-arrow-up"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">
+                    <span th:text="${movUnidadesSalida}">0</span> unidades despachadas
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Stock en almacén</div>
+                        <div class="kpi-value" th:text="${kpiUnidades}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:var(--warning-bg); color:#946617;">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">
+                    Actualizado con cada movimiento
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-surface">
+        <div class="card-surface-head">
+            <h2 class="h6 mb-0">Historial de movimientos</h2>
+            <button type="button" class="btn btn-thread btn-sm" data-modal="modalMovimiento" data-modo="nuevo">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo movimiento
+            </button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(movimientosL)}" class="empty-state">
+            <i class="bi bi-arrow-left-right"></i>
+            <div class="small mt-1">Aún no hay movimientos registrados.</div>
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(movimientosL)}">
+            <table class="table table-trama mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Origen / Destino</th>
+                        <th>Detalle</th>
+                        <th class="text-end">Unidades</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${movimientosL}">
+                        <td class="text-nowrap align-top">
+                            <div class="text-muted-soft" th:text="${m.fecha}">—</div>
+                            <div class="small text-muted-soft" th:text="${m.observacion}" th:title="${m.observacion}">
+                                —
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <span th:if="${m.esEntrada()}" class="badge-status badge-ok">Entrada</span>
+                            <span th:unless="${m.esEntrada()}" class="badge-status badge-transit">Salida</span>
+                        </td>
+                        <td class="align-top">
+                            <div th:text="${m.origen}">—</div>
+                            <div class="small text-muted-soft" th:text="${m.usuario}">—</div>
+                        </td>
+                        <td>
+                            <div th:if="${#lists.isEmpty(m.detalles)}" class="text-muted-soft">Sin productos</div>
+                            <div class="detalle-linea" th:each="d : ${m.detalles}">
+                                <span class="fw-semibold" th:text="${d.codigo}">TR-0000</span>
+                                <span th:text="${d.nombre}">Producto</span>
+                                <span class="text-muted-soft" th:text="${d.variante}">—</span>
+                                <span th:classappend="${m.esEntrada() ? 'delta-in' : 'delta-out'}"
+                                    th:text="${d.variacion}">+0</span>
+                                <span class="text-muted-soft"
+                                    th:text="'→ ' + ${d.stock}">— uds.</span>
+                            </div>
+                        </td>
+                        <td class="text-end align-top fw-semibold" th:text="${m.unidades}">0</td>
+                        <td class="text-end text-nowrap align-top">
+                            <button type="button" class="btn btn-sm btn-outline-denim me-1" title="Editar"
+                                data-modal="modalMovimiento" data-modo="editar"
+                                th:attr="data-idmovimiento=${m.id},
+                                         data-tipo=${m.tipo},
+                                         data-fecha=${m.fechaIso},
+                                         data-sucursalid=${m.sucursalId},
+                                         data-proveedorid=${m.proveedorId},
+                                         data-usuarioid=${m.usuarioId},
+                                         data-observacion=${m.observacion},
+                                         data-detalle=${m.detalleJson}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <a th:href="@{/movimientos/eliminar/{id}(id=${m.id})}"
+                                class="btn btn-sm btn-outline-secondary" title="Eliminar"
+                                th:attr="data-confirm='¿Eliminar el movimiento del ' + ${m.fecha} + '? El stock volverá al inventario.'">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL: MOVIMIENTO ══════════════ -->
+    <div class="modal fade" id="modalMovimiento" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form th:action="@{/movimientos/guardar}" method="post" id="formMovimiento">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Almacén</span>
+                            <h5 class="modal-title fw-display mt-1" id="tituloMovimiento">Registrar movimiento</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="idMovimiento" value="">
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="mTipo">Tipo</label>
+                                <select class="form-select" id="mTipo" name="tipo" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="entrada">Entrada</option>
+                                    <option value="salida">Salida</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="mFecha">Fecha y hora</label>
+                                <input type="datetime-local" class="form-control" id="mFecha" name="fecha" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="mUsuario">Usuario responsable</label>
+                                <select class="form-select" id="mUsuario" name="usuarioId" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option th:each="u : ${usuariosL}" th:value="${u.idUsuario}"
+                                        th:text="${u.nombreCompleto}">Usuario</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6" id="mCampoProveedor">
+                                <label class="form-label small fw-semibold" for="mProveedor">Proveedor</label>
+                                <select class="form-select" id="mProveedor" name="proveedorId">
+                                    <option value="">-- Seleccione --</option>
+                                    <option th:each="pr : ${proveedoresL}" th:value="${pr.idProveedor}"
+                                        th:text="${pr.nombre}">Proveedor</option>
+                                </select>
+                                <div class="form-text">Origen de la mercadería que ingresa.</div>
+                            </div>
+
+                            <div class="col-md-6" id="mCampoSucursal">
+                                <label class="form-label small fw-semibold" for="mSucursal">Sucursal destino</label>
+                                <select class="form-select" id="mSucursal" name="sucursalId">
+                                    <option value="">-- Seleccione --</option>
+                                    <option th:each="s : ${sucursalesL}" th:value="${s.idSucursal}"
+                                        th:text="${s.nombre}">Sucursal</option>
+                                </select>
+                                <div class="form-text">Tienda que recibe el despacho.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold" for="mObservacion">Observación</label>
+                                <input type="text" class="form-control" id="mObservacion" name="observacion"
+                                    placeholder="Motivo del movimiento">
+                            </div>
+                        </div>
+
+                        <hr class="stitch-divider my-3">
+
+                        <!-- ═════════ Selector de productos del movimiento ═════════ -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="stitch-tag">Detalle</span>
+                            <span class="small text-muted-soft" id="mResumenDetalle">0 productos · 0 unidades</span>
+                        </div>
+
+                        <div class="row g-2 align-items-end">
+                            <div class="col-12 col-md-8">
+                                <label class="form-label small fw-semibold" for="mProducto">Producto</label>
+                                <select class="form-select" id="mProducto">
+                                    <option value="">-- Seleccione el producto a mover --</option>
+                                    <option th:each="p : ${productosL}" th:value="${p.idProducto}"
+                                        th:attr="data-codigo=${p.codigo},
+                                                 data-nombre=${p.nombre},
+                                                 data-color=${p.color},
+                                                 data-talla=${p.talla},
+                                                 data-stock=${p.stock},
+                                                 data-minimo=${p.stockMinimo}"
+                                        th:text="${p.codigo + ' · ' + p.nombre + ' · ' + (p.color != null ? p.color : '—') + ' / ' + (p.talla != null ? p.talla : '—') + ' (' + p.stock + ' uds.)'}">
+                                        Producto
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-8 col-md-2">
+                                <label class="form-label small fw-semibold" for="mCantidad">Cantidad</label>
+                                <input type="number" class="form-control" id="mCantidad" min="1" step="1" value="1">
+                            </div>
+                            <div class="col-4 col-md-2 d-grid">
+                                <button type="button" class="btn btn-outline-denim" id="mAgregar">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-danger mt-3 mb-0 py-2 small d-none" id="mError"></div>
+
+                        <div class="table-responsive mt-3 d-none" id="mDetalleWrap">
+                            <table class="table table-trama align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-end">Stock actual</th>
+                                        <th style="width:130px;">Cantidad</th>
+                                        <th class="text-end">Stock resultante</th>
+                                        <th class="text-end">Quitar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mDetalleCuerpo"></tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td class="fw-semibold">Total del movimiento</td>
+                                        <td></td>
+                                        <td class="fw-semibold text-end" id="mTotalUnidades">0</td>
+                                        <td class="text-end text-muted-soft" id="mEfectoTotal">—</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="empty-state py-4" id="mDetalleVacio">
+                            <i class="bi bi-cart-plus"></i>
+                            <div class="small mt-1">
+                                Elige un producto y la cantidad a mover. El stock del inventario se ajusta solo.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-denim btn-sm">
+                            <i class="bi bi-check2 me-1"></i>Guardar movimiento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>

@@ -1,0 +1,102 @@
+<section th:fragment="reportes" id="pag-reportes" class="d-none" data-modulo="reportes">
+
+    <!-- Selección del año (lista cargada de los años con ventas) -->
+    <div class="card-surface mb-3">
+        <div class="card-surface-head flex-wrap gap-2">
+            <div>
+                <h2 class="h6 mb-0">Reporte de ventas por mes</h2>
+                <div class="small text-muted-soft">Montos en soles, después del descuento por volumen.</div>
+            </div>
+            <form th:action="@{/index}" method="get" class="d-flex gap-2 align-items-center" id="formAnio">
+                <label for="anioReporte" class="small text-muted-soft">Año</label>
+                <select class="form-select form-select-sm" id="anioReporte" name="anio" style="width:auto;"
+                    onchange="this.form.action = this.form.action.split('#')[0] + '#reportes'; this.form.submit()">
+                    <option th:each="a : ${aniosL}" th:value="${a}" th:text="${a}" th:selected="${a == anioSel}">2026</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i>Imprimir
+                </button>
+            </form>
+        </div>
+        <div class="p-3">
+            <div style="height:260px;"><canvas id="chartVentasMes"></canvas></div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-trama mb-0">
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th class="text-end">N.º ventas</th>
+                        <th class="text-end">Unidades</th>
+                        <th class="text-end">Subtotal</th>
+                        <th class="text-end">Descuentos</th>
+                        <th class="text-end">Total vendido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${reporteMeses}" th:classappend="${m.ventas == 0} ? 'text-muted-soft'">
+                        <td th:text="${m.nombreMes}">Enero</td>
+                        <td class="text-end" th:text="${m.ventas}">0</td>
+                        <td class="text-end" th:text="${m.unidades}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(m.subtotal, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(m.descuentos, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end fw-semibold" th:text="'S/ ' + ${#numbers.formatDecimal(m.total, 1, 'COMMA', 2, 'POINT')}">0</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold" th:with="t=${reporteTotalAnio}">
+                        <td th:text="${t.nombreMes}">Total</td>
+                        <td class="text-end" th:text="${t.ventas}">0</td>
+                        <td class="text-end" th:text="${t.unidades}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(t.subtotal, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(t.descuentos, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(t.total, 1, 'COMMA', 2, 'POINT')}">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Resumen por año -->
+    <div class="card-surface">
+        <div class="card-surface-head">
+            <h2 class="h6 mb-0">Reporte de ventas por año</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-trama mb-0">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th class="text-end">N.º ventas</th>
+                        <th class="text-end">Unidades</th>
+                        <th class="text-end">Subtotal</th>
+                        <th class="text-end">Descuentos</th>
+                        <th class="text-end">Total vendido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="a : ${reporteAnios}">
+                        <td class="fw-semibold" th:text="${a.nombreMes}">2026</td>
+                        <td class="text-end" th:text="${a.ventas}">0</td>
+                        <td class="text-end" th:text="${a.unidades}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(a.subtotal, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(a.descuentos, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end fw-semibold" th:text="'S/ ' + ${#numbers.formatDecimal(a.total, 1, 'COMMA', 2, 'POINT')}">0</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold" th:with="t=${reporteTotalGeneral}">
+                        <td th:text="${t.nombreMes}">Total</td>
+                        <td class="text-end" th:text="${t.ventas}">0</td>
+                        <td class="text-end" th:text="${t.unidades}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(t.subtotal, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(t.descuentos, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end" th:text="'S/ ' + ${#numbers.formatDecimal(t.total, 1, 'COMMA', 2, 'POINT')}">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+</section>

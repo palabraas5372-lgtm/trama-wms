@@ -1,0 +1,69 @@
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card-surface">
+      <div class="card-surface-head">
+        <h2 class="h6 mb-0">Registrar movimiento</h2>
+        <span class="stitch-tag">Nuevo</span>
+      </div>
+      <div class="p-3">
+        <form id="formMovimiento">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Tipo de movimiento</label>
+            <div class="btn-group w-100" role="group">
+              <input type="radio" class="btn-check" name="tipo" id="tipoEntrada" value="entrada" checked>
+              <label class="btn btn-outline-denim btn-sm" for="tipoEntrada"><i class="bi bi-box-arrow-in-down me-1"></i>Entrada</label>
+              <input type="radio" class="btn-check" name="tipo" id="tipoSalida" value="salida">
+              <label class="btn btn-outline-denim btn-sm" for="tipoSalida"><i class="bi bi-box-arrow-up me-1"></i>Salida</label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Producto</label>
+            <select class="form-select" id="mProducto" required></select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Cantidad</label>
+            <input type="number" class="form-control" id="mCantidad" min="1" required placeholder="Ej. 25">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold" id="lblOrigen">Proveedor de origen</label>
+            <input type="text" class="form-control" id="mOrigen" required placeholder="Ej. Proveedor Textil Andina">
+            <select class="form-select d-none" id="mOrigenSelect"></select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Responsable</label>
+            <input type="text" class="form-control" id="mResponsable" required placeholder="Ej. J. Ramos">
+          </div>
+
+          <div id="movError" class="alert alert-danger py-2 small d-none"></div>
+
+          <button type="submit" class="btn btn-denim w-100"><i class="bi bi-check2-circle me-1"></i>Guardar movimiento</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card-surface">
+      <div class="card-surface-head">
+        <h2 class="h6 mb-0">Historial de movimientos</h2>
+        <select id="filtroTipo" class="form-select form-select-sm" style="width:150px;">
+          <option value="">Todos</option>
+          <option value="entrada">Entradas</option>
+          <option value="salida">Salidas</option>
+        </select>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-trama mb-0">
+          <thead>
+            <tr><th>Fecha</th><th>Tipo</th><th>Código</th><th>Producto</th><th>Cant.</th><th>Origen / Destino</th><th>Responsable</th></tr>
+          </thead>
+          <tbody id="tablaMovimientos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

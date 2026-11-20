@@ -1,0 +1,283 @@
+<section th:fragment="usuarios" id="pag-usuarios" class="d-none" data-modulo="usuarios">
+
+    <!-- Resumen por estado -->
+    <div class="row g-3 mb-3">
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">Activos</div>
+                <div class="kpi-value" th:text="${#lists.size(usuariosL.?[estado == 'activo'])}">0</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">Pendientes de activación</div>
+                <div class="kpi-value" style="color:#946617;" th:text="${usuariosPendientes}">0</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">Anulados</div>
+                <div class="kpi-value" style="color:var(--danger);"
+                    th:text="${#lists.size(usuariosL.?[estado == 'anulado'])}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-surface">
+        <div class="card-surface-head flex-wrap gap-2">
+            <h2 class="h6 mb-0">Listado de usuarios</h2>
+            <div class="d-flex gap-2 align-items-center">
+                <!-- Filtro por estado (en el cliente) -->
+                <select class="form-select form-select-sm" id="filtroEstadoUsuario" style="width:auto;"
+                    aria-label="Filtrar por estado">
+                    <option value="">Todos los estados</option>
+                    <option th:each="e : ${estadosUsuarioL}" th:value="${e}" th:text="${#strings.capitalize(e)}">
+                        Activo</option>
+                </select>
+                <button type="button" class="btn btn-thread btn-sm text-nowrap" data-modal="modalUsuario"
+                    data-modo="nuevo">
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo usuario
+                </button>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(usuariosL)}" class="empty-state">
+            <i class="bi bi-people"></i>
+            <div class="small mt-1">Aún no hay usuarios registrados.</div>
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(usuariosL)}">
+            <table class="table table-trama mb-0" id="tablaUsuarios">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>DNI</th>
+                        <th>Usuario</th>
+                        <th>Nombres y apellidos</th>
+                        <th>Contacto</th>
+                        <th>Perfil</th>
+                        <th>Cargo / Sucursal</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${usuariosL}" th:attr="data-estado=${u.estado}">
+                        <td class="text-muted-soft" th:text="${u.idUsuario}">1</td>
+                        <td>
+                            <span th:if="${u.dni != null and !#strings.isEmpty(u.dni)}" th:text="${u.dni}">40112233</span>
+                            <span th:unless="${u.dni != null and !#strings.isEmpty(u.dni)}"
+                                class="text-muted-soft small" title="Completa el DNI editando el usuario">Sin DNI</span>
+                        </td>
+                        <td class="fw-semibold" th:text="${u.usuario}">admin</td>
+                        <td th:text="${u.nombreCompleto}">Nombre</td>
+                        <td class="small">
+                            <div th:text="${u.telefono ?: '—'}">987654321</div>
+                            <div class="text-muted-soft" th:text="${u.correo}"></div>
+                        </td>
+                        <td>
+                            <span class="badge-status"
+                                th:classappend="${u.perfil != null and u.perfil.esAdministrador()} ? 'badge-transit' : 'badge-ok'"
+                                th:text="${u.perfil != null ? #strings.capitalize(u.perfil.nombre) : '—'}">Perfil</span>
+                        </td>
+                        <td class="small">
+                            <div th:text="${u.rol != null ? u.rol.nombre : '—'}">Rol</div>
+                            <div class="text-muted-soft" th:text="${u.sucursal != null ? u.sucursal.nombre : ''}"></div>
+                        </td>
+                        <td>
+                            <span th:switch="${u.estado}">
+                                <span th:case="'activo'" class="badge-status badge-ok">Activo</span>
+                                <span th:case="'pendiente'" class="badge-status badge-low">Pendiente</span>
+                                <span th:case="'anulado'" class="badge-status badge-out">Anulado</span>
+                                <span th:case="*" class="badge-status badge-out" th:text="${u.estado}">Otro</span>
+                            </span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <!-- Acciones rápidas: solo el administrador activa cuentas -->
+                            <a th:if="${u.estado != 'activo'}" th:href="@{/usuarios/activar/{id}(id=${u.idUsuario})}"
+                                class="btn btn-sm btn-outline-success me-1" title="Activar">
+                                <i class="bi bi-check2-circle"></i>
+                            </a>
+                            <span th:if="${u.esPrincipal()}" class="badge-status badge-transit me-1"
+                                title="Cuenta principal: no se puede eliminar ni anular">
+                                <i class="bi bi-lock-fill"></i> Principal
+                            </span>
+                            <a th:if="${u.estado != 'anulado' and u.idUsuario != usuarioActual.idUsuario and !u.esPrincipal()}"
+                                th:href="@{/usuarios/anular/{id}(id=${u.idUsuario})}"
+                                class="btn btn-sm btn-outline-secondary me-1" title="Anular"
+                                th:attr="data-confirm='¿Anular la cuenta de ' + ${u.usuario} + '? Ya no podrá ingresar.'">
+                                <i class="bi bi-slash-circle"></i>
+                            </a>
+                            <!-- La cuenta principal solo la edita el propio "admin" -->
+                            <button th:if="${!u.esPrincipal() or u.idUsuario == usuarioActual.idUsuario}"
+                                type="button" class="btn btn-sm btn-outline-denim me-1" title="Editar"
+                                data-modal="modalUsuario" data-modo="editar"
+                                th:attr="data-idusuario=${u.idUsuario},
+                                         data-dni=${u.dni},
+                                         data-usuario=${u.usuario},
+                                         data-telefono=${u.telefono},
+                                         data-correo=${u.correo},
+                                         data-nombres=${u.nombres},
+                                         data-apellidos=${u.apellidos},
+                                         data-perfil=${u.perfil != null ? u.perfil.idPerfil : ''},
+                                         data-rol=${u.rol != null ? u.rol.idRol : ''},
+                                         data-sucursal=${u.sucursal != null ? u.sucursal.idSucursal : ''},
+                                         data-estado=${u.estado}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <a th:if="${u.idUsuario != usuarioActual.idUsuario and !u.esPrincipal()}"
+                                th:href="@{/usuarios/eliminar/{id}(id=${u.idUsuario})}"
+                                class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                th:attr="data-confirm='¿Eliminar al usuario ' + ${u.usuario} + '?'">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL: USUARIO ══════════════ -->
+    <div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form th:action="@{/usuarios/guardar}" method="post">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Seguridad</span>
+                            <h5 class="modal-title fw-display mt-1" id="tituloUsuario">Registrar usuario</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="idUsuario" value="">
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uDni">DNI</label>
+                                <input type="text" class="form-control" id="uDni" name="dni" inputmode="numeric"
+                                    maxlength="8" pattern="\d{8}" placeholder="8 dígitos" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uNombres">Nombres</label>
+                                <input type="text" class="form-control" id="uNombres" name="nombres" maxlength="60"
+                                    required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uApellidos">Apellidos</label>
+                                <input type="text" class="form-control" id="uApellidos" name="apellidos"
+                                    maxlength="60" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uTelefono">Teléfono (celular)</label>
+                                <input type="tel" class="form-control" id="uTelefono" name="telefono" inputmode="numeric"
+                                    maxlength="9" pattern="9\d{8}" placeholder="987654321" required>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold" for="uCorreo">Correo electrónico</label>
+                                <input type="email" class="form-control" id="uCorreo" name="correo" maxlength="100"
+                                    placeholder="correo@ejemplo.com" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uUsuario">Usuario</label>
+                                <input type="text" class="form-control" id="uUsuario" name="usuario" maxlength="40"
+                                    pattern="[A-Za-z0-9._\-]{4,40}" placeholder="ej. mquispe" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uClave">Clave</label>
+                                <input type="password" class="form-control" id="uClave" name="clave"
+                                    autocomplete="new-password" minlength="6">
+                                <div class="form-text" id="uClaveAyuda">Mínimo 6 caracteres. Se guarda cifrada.</div>
+                            </div>
+
+                            <!-- Perfil: lista desplegable cargada desde la tabla "perfiles" -->
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uPerfil">Perfil</label>
+                                <select class="form-select" id="uPerfil" name="perfil" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option th:each="p : ${perfilesL}" th:value="${p.idPerfil}"
+                                        th:text="${#strings.capitalize(p.nombre)}">Perfil</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uEstado">Estado</label>
+                                <select class="form-select" id="uEstado" name="estado">
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="activo">Activo</option>
+                                    <option value="anulado">Anulado</option>
+                                </select>
+                            </div>
+
+                            <!-- Rol y sucursal: listas cargadas desde las tablas "roles" y "sucursales" -->
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uRol">Cargo (rol)</label>
+                                <select class="form-select" id="uRol" name="rol">
+                                    <option value="">— Ninguno —</option>
+                                    <option th:each="r : ${rolesL}" th:value="${r.idRol}" th:text="${r.nombre}">Rol</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold" for="uSucursal">Almacén / sucursal</label>
+                                <select class="form-select" id="uSucursal" name="sucursal">
+                                    <option value="">— Ninguna —</option>
+                                    <option th:each="s : ${sucursalesL}" th:value="${s.idSucursal}"
+                                        th:text="${s.nombre}">Sucursal</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-denim btn-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // Filtro de la tabla por estado
+            var filtro = document.getElementById('filtroEstadoUsuario');
+            if (filtro) {
+                filtro.addEventListener('change', function () {
+                    document.querySelectorAll('#tablaUsuarios tbody tr').forEach(function (fila) {
+                        fila.classList.toggle('d-none', !!filtro.value && fila.getAttribute('data-estado') !== filtro.value);
+                    });
+                });
+            }
+
+            // DNI y teléfono: solo dígitos
+            [ ['uDni', 8], ['uTelefono', 9] ].forEach(function (par) {
+                var campo = document.getElementById(par[0]);
+                if (campo) {
+                    campo.addEventListener('input', function () {
+                        campo.value = campo.value.replace(/\D/g, '').slice(0, par[1]);
+                    });
+                }
+            });
+
+            // Al crear, la clave es obligatoria; al editar puede quedar en blanco.
+            // Se encadena en DOMContentLoaded para no pisar el gancho de trama-movimientos.js.
+            document.addEventListener('DOMContentLoaded', function () {
+                var anterior = window.tramaModalAbierto;
+                window.tramaModalAbierto = function (idModal, modo, boton) {
+                    if (anterior) anterior(idModal, modo, boton);
+                    if (idModal !== 'modalUsuario') return;
+                    var clave = document.getElementById('uClave');
+                    clave.required = modo === 'nuevo';
+                    clave.placeholder = modo === 'nuevo' ? 'Clave de acceso' : 'Dejar vacío para mantenerla';
+                };
+            });
+        })();
+    </script>
+
+</section>

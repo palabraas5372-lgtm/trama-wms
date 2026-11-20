@@ -1,0 +1,98 @@
+<section th:fragment="categorias" id="pag-categorias" class="d-none" data-modulo="categorias">
+
+    <div class="card-surface">
+        <div class="card-surface-head">
+            <h2 class="h6 mb-0">Listado de categorías</h2>
+            <button type="button" class="btn btn-thread btn-sm" data-modal="modalCategoria" data-modo="nuevo">
+                <i class="bi bi-plus-lg me-1"></i>Nueva categoría
+            </button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(categoriasL)}" class="empty-state">
+            <i class="bi bi-tags"></i>
+            <div class="small mt-1">Aún no hay categorías registradas.</div>
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(categoriasL)}">
+            <table class="table table-trama mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:70px;">#</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Productos</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${categoriasL}">
+                        <td class="text-muted-soft" th:text="${c.idCategoria}">1</td>
+                        <td class="fw-semibold" th:text="${c.nombre}">Categoría</td>
+                        <td class="text-muted-soft" th:text="${c.descripcion}">Descripción</td>
+                        <td>
+                            <span th:if="${c.productos != null and !c.productos.isEmpty()}"
+                                class="badge-status badge-transit"
+                                th:text="${#lists.size(c.productos)} + ' producto(s)'">0</span>
+                            <span th:if="${c.productos == null or c.productos.isEmpty()}"
+                                class="text-muted-soft small">Sin productos</span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-denim me-1" title="Editar"
+                                data-modal="modalCategoria" data-modo="editar"
+                                th:attr="data-idcategoria=${c.idCategoria},
+                                         data-nombre=${c.nombre},
+                                         data-descripcion=${c.descripcion}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <a th:href="@{/categorias/eliminar/{id}(id=${c.idCategoria})}"
+                                class="btn btn-sm btn-outline-secondary" title="Eliminar"
+                                th:attr="data-confirm='¿Eliminar la categoría ' + ${c.nombre} + '?'">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL: CATEGORÍA ══════════════ -->
+    <div class="modal fade" id="modalCategoria" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/categorias/guardar}" method="post">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Catálogo</span>
+                            <h5 class="modal-title fw-display mt-1" id="tituloCategoria">Registrar categoría</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="idCategoria" value="">
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="cNombre">Nombre</label>
+                            <input type="text" class="form-control" id="cNombre" name="nombre" placeholder="Ej. Casacas"
+                                required>
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label small fw-semibold" for="cDescripcion">Descripción</label>
+                            <textarea class="form-control" id="cDescripcion" name="descripcion" rows="3"
+                                placeholder="Casacas cortavientos y polar"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-denim btn-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>

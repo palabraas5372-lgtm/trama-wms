@@ -1,0 +1,189 @@
+<section th:fragment="solicitudes" id="pag-solicitudes" class="d-none" data-modulo="solicitudes">
+
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Solicitudes</div>
+                        <div class="kpi-value" th:text="${#lists.size(solicitudesL)}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:var(--fabric-2); color:var(--denim);">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">Registradas por las tiendas</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Pendientes</div>
+                        <div class="kpi-value" th:text="${#lists.size(solicitudesL.?[estado == 'pendiente'])}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:var(--warning-bg); color:#946617;">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">Esperando despacho</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">En tránsito</div>
+                        <div class="kpi-value" th:text="${#lists.size(solicitudesL.?[estado == 'en tránsito'])}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:#E4EAF3; color:var(--denim);">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">En camino a la sucursal</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Aprobadas</div>
+                        <div class="kpi-value" th:text="${#lists.size(solicitudesL.?[estado == 'aprobada'])}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:var(--success-bg); color:var(--success);">
+                        <i class="bi bi-check2-all"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">Despachadas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-surface">
+        <div class="card-surface-head">
+            <h2 class="h6 mb-0">Listado de solicitudes</h2>
+            <button type="button" class="btn btn-thread btn-sm" data-modal="modalSolicitud" data-modo="nuevo">
+                <i class="bi bi-plus-lg me-1"></i>Nueva solicitud
+            </button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(solicitudesL)}" class="empty-state">
+            <i class="bi bi-file-earmark-text"></i>
+            <div class="small mt-1">Aún no hay solicitudes registradas.</div>
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(solicitudesL)}">
+            <table class="table table-trama mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Fecha</th>
+                        <th>Sucursal</th>
+                        <th>Solicitante</th>
+                        <th>Estado</th>
+                        <th>Detalle</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${solicitudesL}">
+                        <td class="fw-semibold" th:text="${s.codigo}">SOL-0000</td>
+                        <td class="text-muted-soft text-nowrap" th:text="${s.fecha}">—</td>
+                        <td th:text="${s.sucursal}">—</td>
+                        <td class="text-muted-soft" th:text="${s.usuario}">—</td>
+                        <td>
+                            <span th:if="${s.estado == 'pendiente'}" class="badge-status badge-pending">Pendiente</span>
+                            <span th:if="${s.estado == 'en tránsito'}" class="badge-status badge-transit">
+                                En tránsito
+                            </span>
+                            <span th:if="${s.estado == 'aprobada'}" class="badge-status badge-approved">Aprobada</span>
+                        </td>
+                        <td class="text-muted-soft" th:text="${s.items} + ' ítem(s)'">0 ítem(s)</td>
+                        <td class="text-end text-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-denim me-1" title="Editar"
+                                data-modal="modalSolicitud" data-modo="editar"
+                                th:attr="data-idsolicitud=${s.idSolicitud},
+                                         data-codigo=${s.codigo},
+                                         data-fecha=${s.fecha},
+                                         data-sucursal=${s.idSucursal},
+                                         data-usuario=${s.idUsuario},
+                                         data-estado=${s.estado}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <a th:href="@{/solicitudes/eliminar/{id}(id=${s.idSolicitud})}"
+                                class="btn btn-sm btn-outline-secondary" title="Eliminar"
+                                th:attr="data-confirm='¿Eliminar la solicitud ' + ${s.codigo} + '?'">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL: SOLICITUD ══════════════ -->
+    <div class="modal fade" id="modalSolicitud" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/solicitudes/guardar}" method="post">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Red</span>
+                            <h5 class="modal-title fw-display mt-1" id="tituloSolicitud">Registrar solicitud</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="idSolicitud" value="">
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="soCodigo">Código</label>
+                                <input type="text" class="form-control" id="soCodigo" name="codigo"
+                                    placeholder="SOL-3003" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="soFecha">Fecha</label>
+                                <input type="date" class="form-control" id="soFecha" name="fecha" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="soSucursal">Sucursal</label>
+                                <select class="form-select" id="soSucursal" name="sucursal" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option th:each="s : ${sucursalesL}" th:value="${s.idSucursal}"
+                                        th:text="${s.nombre}">Sucursal</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="soUsuario">Usuario solicitante</label>
+                                <select class="form-select" id="soUsuario" name="usuario" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option th:each="u : ${usuariosL}" th:value="${u.idUsuario}"
+                                        th:text="${u.nombreCompleto}">Usuario</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="soEstado">Estado</label>
+                                <select class="form-select" id="soEstado" name="estado">
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="en tránsito">En tránsito</option>
+                                    <option value="aprobada">Aprobada</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-denim btn-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>

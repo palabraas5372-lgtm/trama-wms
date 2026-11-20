@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/img/favicon.svg}">
+    <title>TRAMA · Portal del cliente</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/styles.css}">
+</head>
+
+<body>
+    <!-- ══════════════ AMBIENTE CLIENTE ══════════════ -->
+    <header class="cliente-top">
+        <div class="d-flex align-items-center gap-3">
+            <div class="brand-mark">
+                <svg class="needle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 20L15 9" stroke="#E8A33D" stroke-width="2" stroke-linecap="round" />
+                    <circle cx="17.5" cy="6.5" r="3" stroke="#E8A33D" stroke-width="2" />
+                    <path d="M2.5 21.5L4.5 19.5" stroke="#E8A33D" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span>TRAMA</span>
+            </div>
+            <span class="d-none d-sm-inline text-dim small">Portal del cliente</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-end d-none d-sm-block">
+                <div class="fw-semibold small" th:text="${usuarioActual.nombreCompleto}">Cliente</div>
+                <div class="text-dim" style="font-size:var(--text-2xs);" th:text="${usuarioActual.etiqueta()}">Cliente</div>
+            </div>
+            <a th:href="@{/logout}" class="btn btn-sm btn-thread">
+                <i class="bi bi-box-arrow-right me-1"></i>Salir
+            </a>
+        </div>
+    </header>
+
+    <main class="cliente-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+            <div>
+                <span class="stitch-tag">Bienvenido(a)</span>
+                <h1 class="fw-display mt-1 mb-0" style="font-size:1.7rem;"
+                    th:text="'Hola, ' + ${yo != null and yo.nombres != null ? yo.nombres : usuarioActual.usuario}">Hola</h1>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-denim" href="#descuentos"><i class="bi bi-percent me-1"></i>Descuentos</a>
+                <a class="btn btn-outline-denim" href="#mis-pedidos"><i class="bi bi-bag me-1"></i>Mis pedidos</a>
+                <a class="btn btn-outline-denim" href="#contacto"><i class="bi bi-headset me-1"></i>Contáctanos</a>
+                <button type="button" class="btn btn-thread" data-bs-toggle="modal" data-bs-target="#modalPedido">
+                    <i class="bi bi-cart-plus me-1"></i>Hacer pedido
+                </button>
+            </div>
+        </div>
+
+        <!-- ══════════ CAMPAÑA POR FECHA ESPECIAL ══════════ -->
+        <div th:if="${festivo != null}" class="alert d-flex align-items-center gap-3 mb-3"
+            style="background:var(--denim-dark);color:#fff;border:0;">
+            <i class="bi fs-2" th:classappend="${festivo.icono}" style="color:var(--thread);"></i>
+            <div>
+                <div class="fw-bold" th:text="'¡Campaña ' + ${festivo.nombre} + '! ' + ${festivo.porcentaje} + '% de descuento adicional'">Campaña</div>
+                <div class="small" style="opacity:.85;"
+                    th:text="'En todos tus pedidos hasta el ' + ${#temporals.format(festivo.hasta, 'dd/MM/yyyy')} + ', y se suma a tu descuento por volumen.'"></div>
+            </div>
+        </div>
+        <div th:if="${festivo == null and proximoFestivo != null}" class="alert alert-light border d-flex align-items-center gap-2 mb-3 small">
+            <i class="bi bi-calendar-event" style="color:var(--thread);"></i>
+            <span th:text="'Próxima campaña: ' + ${proximoFestivo.nombre} + ' — ' + ${proximoFestivo.porcentaje} + '% adicional desde el ' + ${#temporals.format(proximoFestivo.desde, 'dd/MM/yyyy')} + '.'"></span>
+        </div>
+        <div th:if="${fechaSimulada != null}" class="small text-muted-soft mb-2"
+            th:text="'(Fecha simulada para la demostración: ' + ${#temporals.format(fechaSimulada, 'dd/MM/yyyy')} + ')'"></div>
+
+        <!-- ══════════ DESCUENTOS POR VOLUMEN ══════════ -->
+        <div class="card-surface mb-3" id="descuentos">
+            <div class="card-surface-head flex-wrap gap-2">
+                <div>
+                    <h2 class="h6 mb-0">Descuentos por volumen</h2>
+                    <div class="small text-muted-soft">Se aplican automáticamente según el total de unidades de tu pedido.</div>
+                </div>
+                <span class="stitch-tag">Venta al por mayor</span>
+            </div>
+            <div class="row g-3 p-3">
+                <div class="col-md-4" th:each="n, it : ${nivelesDescuento}">
+                    <div class="detalle-item h-100" th:style="${it.last} ? 'background:var(--warning-bg);border-color:#d9b46a;' : ''">
+                        <span th:text="${n.nombre}">Mayorista</span>
+                        <strong class="fs-4" th:text="${n.porcentaje} + '% dscto.'">5%</strong>
+                        <div class="small text-muted-soft" th:text="'Desde ' + ${n.minimoUnidades} + ' unidades por pedido'"></div>
+                        <div th:if="${it.last}" class="small mt-1" style="color:#946617;">
+                            <i class="bi bi-shop me-1"></i>Pensado para clientes con tiendas propias
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-3 pb-3">
+                <div class="small fw-semibold mb-2"><i class="bi bi-calendar-heart me-1" style="color:var(--thread);"></i>
+                    Fechas especiales del Perú (descuento adicional que se suma al de volumen)</div>
+                <div class="d-flex flex-wrap gap-2">
+                    <span th:each="f : ${festivosL}" class="badge-status"
+                        th:classappend="${festivo != null and festivo.desde == f.desde} ? 'badge-low' : 'badge-transit'">
+                        <i class="bi me-1" th:classappend="${f.icono}"></i>
+                        <span th:text="${f.nombre} + ' +' + ${f.porcentaje} + '% · ' + ${#temporals.format(f.desde, 'dd/MM')} + ' al ' + ${#temporals.format(f.hasta, 'dd/MM')}"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <!-- Mis datos -->
+            <div class="col-lg-4">
+                <div class="card-surface h-100">
+                    <div class="card-surface-head">
+                        <h2 class="h6 mb-0">Mis datos</h2>
+                        <span class="badge-status badge-ok">Activo</span>
+                    </div>
+                    <div class="p-3" th:if="${yo != null}">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="detalle-item"><span>DNI</span><strong th:text="${yo.dni ?: '—'}">—</strong></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="detalle-item"><span>Usuario</span><strong th:text="${yo.usuario}">—</strong></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="detalle-item"><span>Teléfono</span><strong th:text="${yo.telefono ?: '—'}">—</strong></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="detalle-item"><span>Correo</span><strong class="text-break" th:text="${yo.correo ?: '—'}">—</strong></div>
+                            </div>
+                            <div class="col-12">
+                                <div class="detalle-item"><span>Nombres</span><strong th:text="${yo.nombres}">—</strong></div>
+                            </div>
+                            <div class="col-12">
+                                <div class="detalle-item"><span>Apellidos</span><strong th:text="${yo.apellidos}">—</strong></div>
+                            </div>
+                            <div class="col-12">
+                                <div class="detalle-item"><span>Mi almacén</span>
+                                    <strong><i class="bi bi-shop"></i>
+                                        <span th:text="${yo.sucursal != null ? yo.sucursal.nombre : 'Sin almacén asignado'}">—</span></strong>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="detalle-item"><span>Perfil</span>
+                                    <strong th:text="${yo.perfil != null ? #strings.capitalize(yo.perfil.nombre) : '—'}">Cliente</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catálogo -->
+            <div class="col-lg-8">
+                <div class="card-surface">
+                    <div class="card-surface-head flex-wrap gap-2">
+                        <div>
+                            <h2 class="h6 mb-0">Catálogo disponible</h2>
+                            <div class="small text-muted-soft"
+                                th:text="${disponibles} + ' de ' + ${#lists.size(productosL)} + ' productos con stock'">
+                            </div>
+                        </div>
+
+                        <!-- Filtro: categorías cargadas desde la tabla "categorias" -->
+                        <form th:action="@{/cliente}" method="get" class="d-flex gap-2 flex-wrap">
+                            <input type="search" name="q" class="form-control form-control-sm" style="width:160px;"
+                                placeholder="Buscar..." th:value="${busqueda}">
+                            <select name="categoria" class="form-select form-select-sm" style="width:auto;"
+                                onchange="this.form.submit()" aria-label="Categoría">
+                                <option value="">Todas las categorías</option>
+                                <option th:each="c : ${categoriasL}" th:value="${c.idCategoria}" th:text="${c.nombre}"
+                                    th:selected="${c.idCategoria == categoriaSel}">Categoría</option>
+                            </select>
+                            <button class="btn btn-sm btn-outline-denim" type="submit"><i class="bi bi-search"></i></button>
+                        </form>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(productosL)}" class="empty-state">
+                        <i class="bi bi-box-seam"></i>
+                        <div class="small mt-1">No hay productos para ese filtro.</div>
+                    </div>
+
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(productosL)}">
+                        <table class="table table-trama mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Talla</th>
+                                    <th>Color</th>
+                                    <th class="text-end">Precio</th>
+                                    <th>Disponibilidad</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${productosL}">
+                                    <td class="text-muted-soft text-nowrap" th:text="${p.codigo}">TR-1001</td>
+                                    <td class="fw-semibold" th:text="${p.nombre}">Producto</td>
+                                    <td th:text="${p.categoria != null ? p.categoria.nombre : '—'}">Categoría</td>
+                                    <td th:text="${p.talla}">M</td>
+                                    <td class="text-nowrap">
+                                        <span class="swatch me-1" th:style="'background:' + ${p.colorHex}"></span>
+                                        <span th:text="${p.color}">Azul</span>
+                                    </td>
+                                    <td class="text-end text-nowrap fw-semibold" th:text="'S/ ' + ${#numbers.formatDecimal(p.precio, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</td>
+                                    <td>
+                                        <span th:if="${p.stock == 0}" class="badge-status badge-out">Agotado</span>
+                                        <span th:if="${p.stock > 0 and p.stock <= p.stockMinimo}"
+                                            class="badge-status badge-low">Pocas unidades</span>
+                                        <span th:if="${p.stock > p.stockMinimo}" class="badge-status badge-ok">Disponible</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <button th:if="${p.stock >= minimoPedido}" type="button" class="btn btn-sm btn-outline-denim"
+                                            data-pedir th:attr="data-producto=${p.idProducto}" title="Agregar al pedido">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <!-- ══════════ MIS PEDIDOS ══════════ -->
+            <div class="col-lg-8" id="mis-pedidos">
+                <div class="card-surface h-100">
+                    <div class="card-surface-head">
+                        <div>
+                            <h2 class="h6 mb-0">Mis pedidos</h2>
+                            <div class="small text-muted-soft" th:text="${pedidosPendientes} + ' pendiente(s) de atención'"></div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-thread" data-bs-toggle="modal" data-bs-target="#modalPedido">
+                            <i class="bi bi-plus-lg me-1"></i>Nuevo
+                        </button>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(misPedidos)}" class="empty-state">
+                        <i class="bi bi-bag"></i>
+                        <div class="small mt-1">Aún no has hecho pedidos.</div>
+                    </div>
+
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(misPedidos)}">
+                        <table class="table table-trama mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Fecha</th>
+                                    <th>Productos</th>
+                                    <th class="text-end">Total</th>
+                                    <th>Estado</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pe : ${misPedidos}" th:with="v=${ventasPorPedido[pe.idPedido]}">
+                                    <td class="fw-semibold text-nowrap" th:text="${pe.codigo}">PED-0001</td>
+                                    <td class="small text-nowrap" th:text="${#temporals.format(pe.fecha, 'dd/MM/yyyy HH:mm')}">—</td>
+                                    <td class="small">
+                                        <div th:each="d : ${pe.detalles}"
+                                            th:text="${d.cantidad} + ' × ' + ${d.producto.nombre} + ' (' + ${d.producto.talla} + ', ' + ${d.producto.color} + ')'">
+                                        </div>
+                                    </td>
+                                    <td class="text-end text-nowrap small">
+                                        <div class="fw-semibold"
+                                            th:text="'S/ ' + ${#numbers.formatDecimal(v != null ? v.total : pe.totalEstimado, 1, 'COMMA', 2, 'POINT')}">S/ 0</div>
+                                        <span th:if="${(v != null ? v.descuentoPct : pe.descuentoPct) > 0}" class="text-success"
+                                            th:text="'-' + ${v != null ? v.descuentoPct : pe.descuentoPct} + '% dscto.'"></span>
+                                        <div th:if="${pe.festivoNombre != null}" class="text-muted-soft" th:text="${pe.festivoNombre}"></div>
+                                    </td>
+                                    <td th:switch="${pe.estado}">
+                                        <span th:case="'pendiente'" class="badge-status badge-low">Pendiente de pago</span>
+                                        <span th:case="'pagado'" class="badge-status badge-transit">Pagado · en despacho</span>
+                                        <span th:case="'entregado'" class="badge-status badge-ok">Entregado</span>
+                                        <span th:case="'atendido'" class="badge-status badge-ok">Atendido</span>
+                                        <span th:case="*" class="badge-status badge-out">Cancelado</span>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <a th:if="${v != null}" th:href="@{/cliente/comprobante/{id}(id=${v.idVenta})}" target="_blank"
+                                            class="btn btn-sm btn-outline-denim" th:title="${v.esFactura()} ? 'Descargar factura' : 'Descargar boleta'">
+                                            <i class="bi bi-file-earmark-pdf"></i> <span th:text="${v.esFactura()} ? 'Factura' : 'Boleta'">Boleta</span>
+                                        </a>
+                                        <a th:if="${pe.estado == 'pendiente'}"
+                                            th:href="@{/cliente/pedidos/{id}/cancelar(id=${pe.idPedido})}"
+                                            class="btn btn-sm btn-outline-secondary" title="Cancelar pedido"
+                                            th:attr="data-confirm='¿Cancelar el pedido ' + ${pe.codigo} + '?'">
+                                            <i class="bi bi-x-lg"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ CONTACTO ══════════ -->
+            <div class="col-lg-4" id="contacto">
+                <div class="card-surface h-100">
+                    <div class="card-surface-head">
+                        <h2 class="h6 mb-0">Contáctanos</h2>
+                        <span class="stitch-tag">Atención</span>
+                    </div>
+                    <div class="p-3 d-grid gap-2">
+                        <!-- Almacén elegido en el registro -->
+                        <div class="detalle-item mb-1" th:if="${yo != null and yo.sucursal != null}">
+                            <span>Tu almacén</span>
+                            <strong class="d-block" th:text="${yo.sucursal.nombre} + ' — ' + ${yo.sucursal.ciudad}">Almacén</strong>
+                            <div class="small text-muted-soft mt-1" th:if="${yo.sucursal.encargado}"
+                                th:text="'Encargado(a): ' + ${yo.sucursal.encargado}"></div>
+                            <a th:if="${yo.sucursal.telefono}" th:href="'tel:' + ${yo.sucursal.telefono}"
+                                class="btn btn-sm btn-denim mt-2">
+                                <i class="bi bi-telephone me-1"></i>[[${'Llamar al ' + yo.sucursal.telefono}]]
+                            </a>
+                        </div>
+                        <a class="btn btn-success text-start"
+                            th:href="'https://wa.me/' + ${contactoWhatsapp} + '?text=Hola%20TRAMA%2C%20soy%20' + ${#strings.replace(usuarioActual.nombreCompleto, ' ', '%20')}"
+                            target="_blank" rel="noopener">
+                            <i class="bi bi-whatsapp me-2"></i>Escríbenos por WhatsApp
+                        </a>
+                        <a class="btn btn-outline-denim text-start" th:href="'tel:' + ${contactoTelefono}">
+                            <i class="bi bi-telephone me-2"></i><span th:text="${contactoTelefono}">01-441-2200</span>
+                        </a>
+                        <a class="btn btn-outline-denim text-start" th:href="'mailto:' + ${contactoEmail}">
+                            <i class="bi bi-envelope me-2"></i><span th:text="${contactoEmail}">ventas@trama.pe</span>
+                        </a>
+                        <div class="detalle-item mt-1">
+                            <span>Horario de atención</span>
+                            <strong><i class="bi bi-clock"></i><span th:text="${contactoHorario}">L-S</span></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ══════════ MODAL: HACER PEDIDO ══════════ -->
+    <div class="modal fade" id="modalPedido" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form th:action="@{/cliente/pedidos}" method="post" id="formPedido">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Pedido</span>
+                            <h5 class="modal-title fw-display mt-1">Hacer un pedido</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="alert alert-light border small py-2" th:if="${yo != null and yo.sucursal != null}">
+                            <i class="bi bi-shop me-1"></i>Tu pedido lo atenderá
+                            <strong th:text="${yo.sucursal.nombre}">el almacén</strong>.
+                        </div>
+                        <!-- Agregar líneas: productos con stock cargados desde la BD -->
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold" for="pedProducto">Producto</label>
+                                <select class="form-select" id="pedProducto">
+                                    <option value="">-- Seleccione --</option>
+                                    <option th:each="p : ${pedibles}" th:value="${p.idProducto}"
+                                        th:attr="data-stock=${p.stock},data-precio=${p.precio}"
+                                        th:text="${p.codigo} + ' · ' + ${p.nombre} + ' (' + ${p.talla} + ', ' + ${p.color} + ') · S/ ' + ${#numbers.formatDecimal(p.precio, 1, 'COMMA', 2, 'POINT')}">
+                                        Producto</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label small fw-semibold" for="pedCantidad">Cantidad</label>
+                                <input type="number" class="form-control" id="pedCantidad"
+                                    th:attr="min=${minimoPedido}" th:value="${minimoPedido}" step="1">
+                            </div>
+                            <div class="col-6 col-md-2 d-grid">
+                                <button type="button" class="btn btn-outline-denim" id="pedAgregar">
+                                    <i class="bi bi-plus-lg"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="small text-muted-soft mt-1">
+                            <i class="bi bi-info-circle me-1"></i>Venta al por mayor: mínimo
+                            <strong th:text="${minimoPedido}">10</strong> unidades por producto.
+                        </div>
+                        <div class="small text-danger mt-1" id="pedError"></div>
+
+                        <table class="table table-trama mt-3 mb-2">
+                            <thead>
+                                <tr><th>Producto</th><th style="width:110px;">Cantidad</th><th style="width:50px;"></th></tr>
+                            </thead>
+                            <tbody id="pedLineas">
+                                <tr class="ped-vacio"><td colspan="3" class="text-muted-soft small">Aún no agregas productos.</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Resumen con el descuento por volumen (estimado) -->
+                        <div class="mb-3 p-3" style="background:var(--fabric);border:1px solid var(--line);border-radius:.5rem;">
+                            <div class="d-flex justify-content-between small"><div>Unidades</div><b id="resUnidades">0</b></div>
+                            <div class="d-flex justify-content-between small"><div>Subtotal</div><b id="resSubtotal">S/ 0.00</b></div>
+                            <div class="d-flex justify-content-between small text-success"><div>Descuento por volumen (<b id="resPct">0</b>%)</div><b id="resDescuento">- S/ 0.00</b></div>
+                            <div th:if="${festivo != null}" class="d-flex justify-content-between small text-success">
+                                <div th:text="'Descuento ' + ${festivo.nombre} + ' (' + ${festivo.porcentaje} + '%)'">Festivo</div><b id="resFestivo">- S/ 0.00</b></div>
+                            <div class="d-flex justify-content-between mt-1 pt-1 border-top"><div class="fw-semibold">Total estimado</div><b class="fs-5" id="resTotal">S/ 0.00</b></div>
+                            <div class="small mt-1" style="color:#946617;" id="resSiguiente"></div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label class="form-label small fw-semibold" for="pedTelefono">Teléfono de contacto</label>
+                                <input type="tel" class="form-control" id="pedTelefono" name="telefono"
+                                    th:value="${yo != null ? yo.telefono : ''}"
+                                    pattern="[0-9 +\(\)\-]{6,20}" placeholder="ej. 987 654 321" required>
+                            </div>
+                            <div class="col-md-7">
+                                <label class="form-label small fw-semibold" for="pedObs">Observación (opcional)</label>
+                                <input type="text" class="form-control" id="pedObs" name="observacion" maxlength="200"
+                                    placeholder="ej. Entregar en la mañana">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-denim btn-sm"><i class="bi bi-send me-1"></i>Enviar pedido</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opción de retorno: volver al inicio del portal -->
+    <a href="#" class="btn btn-denim btn-sm position-fixed shadow" style="bottom:20px;left:20px;z-index:1070;"
+        onclick="window.scrollTo({ top: 0, behavior: 'smooth' }); return false;">
+        <i class="bi bi-arrow-up me-1"></i>Volver arriba
+    </a>
+
+    <!-- Avisos (pedido enviado, error de stock, etc.) -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1080;">
+        <div th:if="${mensaje}" class="toast show trama-toast" role="alert"
+            th:classappend="${tipoMensaje == 'success'} ? 'toast-success' : 'toast-danger'">
+            <div class="d-flex align-items-center">
+                <div class="toast-body" th:text="${mensaje}">Listo</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        (function () {
+            var MINIMO = /*[[${minimoPedido}]]*/ 10;
+            var select = document.getElementById('pedProducto');
+            var cantidad = document.getElementById('pedCantidad');
+            var cuerpo = document.getElementById('pedLineas');
+            var error = document.getElementById('pedError');
+            var modal = document.getElementById('modalPedido');
+            var MINIMOS = /*[[${descMinimos}]]*/ [50, 100, 200];
+            var PCTS = /*[[${descPorcentajes}]]*/ [5, 10, 15];
+            var FESTIVO = /*[[${festivoPct}]]*/ 0;
+
+            // Calcula subtotal, descuento por volumen y total del pedido
+            function recalcular() {
+                var unidades = 0, subtotal = 0;
+                cuerpo.querySelectorAll('tr[data-id]').forEach(function (fila) {
+                    var op = select.querySelector('option[value="' + fila.getAttribute('data-id') + '"]');
+                    var cant = parseInt(fila.querySelector('input[name="cantidad"]').value, 10) || 0;
+                    unidades += cant;
+                    subtotal += cant * (parseFloat(op.getAttribute('data-precio')) || 0);
+                });
+                var pct = 0, siguiente = null;
+                for (var i = 0; i < MINIMOS.length; i++) {
+                    if (unidades >= MINIMOS[i]) pct = PCTS[i];
+                    else if (siguiente === null) siguiente = i;
+                }
+                var descVolumen = Math.round(subtotal * pct) / 100;
+                var descuento = Math.round(subtotal * (pct + FESTIVO)) / 100;
+                var resFestivo = document.getElementById('resFestivo');
+                if (resFestivo) resFestivo.textContent = '- ' + ('S/ ' + (descuento - descVolumen).toFixed(2));
+                var soles = function (n) { return 'S/ ' + n.toFixed(2); };
+                document.getElementById('resUnidades').textContent = unidades;
+                document.getElementById('resSubtotal').textContent = soles(subtotal);
+                document.getElementById('resPct').textContent = pct;
+                document.getElementById('resDescuento').textContent = '- ' + soles(descVolumen);
+                document.getElementById('resTotal').textContent = soles(subtotal - descuento);
+                document.getElementById('resSiguiente').textContent = siguiente === null
+                    ? (unidades > 0 ? '¡Tienes el descuento máximo!' : '')
+                    : 'Agrega ' + (MINIMOS[siguiente] - unidades) + ' unidades más para obtener ' + PCTS[siguiente] + '% de descuento.';
+            }
+            cuerpo.addEventListener('input', recalcular);
+
+            function agregar(id, cant) {
+                var opcion = select.querySelector('option[value="' + id + '"]');
+                if (!opcion) return;
+                var stock = parseInt(opcion.getAttribute('data-stock'), 10);
+                error.textContent = '';
+
+                // Si ya está en la lista, se suma la cantidad
+                var existente = cuerpo.querySelector('tr[data-id="' + id + '"] input[name="cantidad"]');
+                var total = cant + (existente ? parseInt(existente.value, 10) : 0);
+                if (!cant || total < MINIMO) { error.textContent = 'Mínimo ' + MINIMO + ' unidades por producto.'; return; }
+                if (total > stock) { error.textContent = 'Solo hay ' + stock + ' unidades disponibles.'; return; }
+                if (existente) { existente.value = total; recalcular(); return; }
+
+                var vacio = cuerpo.querySelector('.ped-vacio');
+                if (vacio) vacio.remove();
+
+                var fila = document.createElement('tr');
+                fila.setAttribute('data-id', id);
+                fila.innerHTML =
+                    '<td class="small"></td>' +
+                    '<td><input type="hidden" name="productoId" value="' + id + '">' +
+                    '<input type="number" name="cantidad" class="form-control form-control-sm" min="' + MINIMO + '" max="' + stock + '" value="' + cant + '" required></td>' +
+                    '<td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary" data-quitar><i class="bi bi-trash"></i></button></td>';
+                fila.firstChild.textContent = opcion.textContent.trim();
+                cuerpo.appendChild(fila);
+                recalcular();
+            }
+
+            document.getElementById('pedAgregar').addEventListener('click', function () {
+                if (!select.value) { error.textContent = 'Selecciona un producto.'; return; }
+                agregar(select.value, parseInt(cantidad.value, 10));
+                select.value = ''; cantidad.value = MINIMO;
+            });
+
+            cuerpo.addEventListener('click', function (e) {
+                var b = e.target.closest('[data-quitar]');
+                if (!b) return;
+                b.closest('tr').remove();
+                recalcular();
+                if (!cuerpo.querySelector('tr')) {
+                    cuerpo.innerHTML = '<tr class="ped-vacio"><td colspan="3" class="text-muted-soft small">Aún no agregas productos.</td></tr>';
+                }
+            });
+
+            document.getElementById('formPedido').addEventListener('submit', function (e) {
+                if (!cuerpo.querySelector('input[name="productoId"]')) {
+                    e.preventDefault();
+                    error.textContent = 'Agrega al menos un producto.';
+                }
+            });
+
+            // Botón "Pedir" del catálogo: agrega el producto y abre el modal
+            document.addEventListener('click', function (e) {
+                var pedir = e.target.closest('[data-pedir]');
+                if (pedir) {
+                    agregar(pedir.getAttribute('data-producto'), MINIMO);
+                    bootstrap.Modal.getOrCreateInstance(modal).show();
+                    return;
+                }
+                var confirmar = e.target.closest('a[data-confirm]');
+                if (confirmar && !window.confirm(confirmar.getAttribute('data-confirm'))) e.preventDefault();
+            });
+
+            // Avisos del servidor
+            document.querySelectorAll('.trama-toast').forEach(function (t) {
+                bootstrap.Toast.getOrCreateInstance(t, { delay: 6000 }).show();
+            });
+        })();
+    </script>
+</body>
+
+</html>

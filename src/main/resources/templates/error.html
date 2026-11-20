@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/img/favicon.svg}">
+    <title>TRAMA · Página no disponible</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/styles.css}">
+</head>
+
+<!-- Página de error propia: reemplaza la "Whitelabel Error Page" y siempre ofrece cómo volver -->
+<body class="d-flex align-items-center justify-content-center" style="min-height:100vh;">
+    <div class="card-surface p-4 text-center" style="max-width:460px;">
+        <span class="stitch-tag">TRAMA</span>
+        <h1 class="fw-display mt-2" style="font-size:2.4rem;" th:text="${status ?: 'Error'}">404</h1>
+        <p class="mb-1 fw-semibold" th:text="${status == 404} ? 'La página que buscas no existe.' : 'Ocurrió un problema al procesar tu solicitud.'">
+            Ocurrió un problema.</p>
+        <p class="small text-muted-soft">Puedes volver a la página anterior o regresar al inicio.</p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-denim" onclick="history.back()">
+                <i class="bi bi-arrow-left me-1"></i>Volver atrás
+            </button>
+            <a th:href="@{/}" class="btn btn-denim"><i class="bi bi-house me-1"></i>Ir al inicio</a>
+        </div>
+    </div>
+</body>
+
+</html>

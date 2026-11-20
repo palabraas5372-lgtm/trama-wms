@@ -1,0 +1,275 @@
+<section th:fragment="pedidos" id="pag-pedidos" class="d-none" data-modulo="pedidos">
+
+    <!-- Flujo del pedido -->
+    <div class="row g-3 mb-3">
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">1 · Por cobrar</div>
+                <div class="kpi-value" style="color:#946617;" th:text="${pedidosPendientes}">0</div>
+                <div class="small text-muted-soft">Pedidos pendientes de pago</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">2 · Por entregar</div>
+                <div class="kpi-value" style="color:var(--denim);" th:text="${pedidosPorEntregar}">0</div>
+                <div class="small text-muted-soft">Cobrados, con comprobante emitido</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">3 · Entregados</div>
+                <div class="kpi-value" style="color:var(--success);"
+                    th:text="${#lists.size(pedidosL.?[estado == 'entregado'])}">0</div>
+                <div class="small text-muted-soft">Flujo cerrado</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-surface">
+        <div class="card-surface-head flex-wrap gap-2">
+            <div>
+                <h2 class="h6 mb-0">Pedidos de clientes</h2>
+                <div class="small text-muted-soft">Pendiente → <strong>Cobrar</strong> (venta + boleta/factura PDF) →
+                    <strong>Entregar</strong></div>
+            </div>
+            <select class="form-select form-select-sm" id="filtroEstadoPedido" style="width:auto;"
+                aria-label="Filtrar por estado">
+                <option value="">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="pagado">Pagado</option>
+                <option value="entregado">Entregado</option>
+                <option value="cancelado">Cancelado</option>
+            </select>
+        </div>
+
+        <div th:if="${#lists.isEmpty(pedidosL)}" class="empty-state">
+            <i class="bi bi-bag"></i>
+            <div class="small mt-1">Todavía no hay pedidos de clientes.</div>
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(pedidosL)}">
+            <table class="table table-trama mb-0" id="tablaPedidos">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Productos</th>
+                        <th class="text-end">Total</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="pe : ${pedidosL}" th:with="v=${ventasPorPedido[pe.idPedido]}"
+                        th:attr="data-estado=${pe.estado}">
+                        <td class="fw-semibold text-nowrap" th:text="${pe.codigo}">PED-0001</td>
+                        <td class="small text-nowrap" th:text="${#temporals.format(pe.fecha, 'dd/MM/yyyy HH:mm')}">—</td>
+                        <td>
+                            <div th:text="${pe.usuario.nombreCompleto}">Cliente</div>
+                            <div class="small text-muted-soft">
+                                <span th:text="${pe.sucursal != null ? pe.sucursal.nombre : '—'}"></span> ·
+                                <a th:href="'tel:' + ${pe.telefono}" th:text="${pe.telefono}" class="link-denim"></a>
+                            </div>
+                        </td>
+                        <td class="small">
+                            <div th:each="d : ${pe.detalles}" class="text-nowrap"
+                                th:text="${d.cantidad} + ' × ' + ${d.producto.codigo} + ' ' + ${d.producto.nombre} + ' (' + ${d.producto.talla} + ')'">
+                            </div>
+                            <div class="text-muted-soft" th:text="${pe.totalUnidades} + ' unidades'"></div>
+                            <div th:if="${pe.observacion}" class="text-muted-soft fst-italic" th:text="'“' + ${pe.observacion} + '”'"></div>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <!-- Cobrado: monto real de la venta; si no, estimado con el precio actual -->
+                            <div class="fw-semibold"
+                                th:text="'S/ ' + ${#numbers.formatDecimal(v != null ? v.total : pe.totalEstimado, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div>
+                            <span th:if="${(v != null ? v.descuentoPct : pe.descuentoPct) > 0}" class="badge-status badge-ok"
+                                th:text="'-' + ${v != null ? v.descuentoPct : pe.descuentoPct} + '% dscto.'">-5%</span>
+                            <div th:if="${pe.festivoNombre != null}" class="small text-muted-soft"
+                                th:text="${pe.festivoNombre} + ' +' + ${pe.descuentoFestivoPct} + '%'"></div>
+                        </td>
+                        <td th:switch="${pe.estado}">
+                            <span th:case="'pendiente'" class="badge-status badge-low">Pendiente</span>
+                            <span th:case="'pagado'" class="badge-status badge-transit">Pagado</span>
+                            <span th:case="'entregado'" class="badge-status badge-ok">Entregado</span>
+                            <span th:case="'atendido'" class="badge-status badge-ok">Atendido</span>
+                            <span th:case="*" class="badge-status badge-out">Cancelado</span>
+                            <div th:if="${v != null}" class="small text-muted-soft mt-1 text-nowrap" th:text="${v.comprobante}"></div>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <!-- 1. Cobrar -->
+                            <button th:if="${pe.estado == 'pendiente'}" type="button" class="btn btn-sm btn-success me-1"
+                                data-bs-toggle="modal" data-bs-target="#modalCobro"
+                                th:attr="data-cobro-id=${pe.idPedido},
+                                         data-cobro-codigo=${pe.codigo},
+                                         data-cobro-cliente=${pe.usuario.nombreCompleto},
+                                         data-cobro-unidades=${pe.totalUnidades},
+                                         data-cobro-subtotal=${pe.subtotalEstimado},
+                                         data-cobro-pct=${pe.descuentoPct},
+                                         data-cobro-festivo=${pe.festivoNombre != null ? ' + ' + pe.festivoNombre : ''},
+                                         data-cobro-descuento=${pe.descuentoEstimado},
+                                         data-cobro-total=${pe.totalEstimado}">
+                                <i class="bi bi-cash-coin me-1"></i>Cobrar
+                            </button>
+                            <a th:if="${pe.estado == 'pendiente'}" th:href="@{/pedidos/{id}/cancelar(id=${pe.idPedido})}"
+                                class="btn btn-sm btn-outline-secondary" title="Cancelar pedido"
+                                th:attr="data-confirm='¿Cancelar el pedido ' + ${pe.codigo} + '?'">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                            <!-- 2. Comprobante y entrega -->
+                            <a th:if="${v != null}" th:href="@{/ventas/{id}/pdf(id=${v.idVenta})}" target="_blank"
+                                class="btn btn-sm btn-outline-denim me-1" title="Ver comprobante en PDF">
+                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                            </a>
+                            <a th:if="${pe.estado == 'pagado'}" th:href="@{/pedidos/{id}/entregar(id=${pe.idPedido})}"
+                                class="btn btn-sm btn-denim" title="Marcar como entregado"
+                                th:attr="data-confirm='¿Confirmas que el pedido ' + ${pe.codigo} + ' fue ENTREGADO al cliente?'">
+                                <i class="bi bi-truck me-1"></i>Entregar
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL: COBRAR PEDIDO ══════════════ -->
+    <div class="modal fade" id="modalCobro" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" id="formCobro" th:attr="data-base=@{/pedidos/}">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Cobro</span>
+                            <h5 class="modal-title fw-display mt-1">Cobrar pedido <span id="cobroCodigo"></span></h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="detalle-item mb-3">
+                            <span>Cliente</span>
+                            <strong id="cobroCliente">—</strong>
+                        </div>
+
+                        <!-- Resumen con el descuento por volumen -->
+                        <table class="table table-sm mb-3">
+                            <tr><td>Subtotal (<span id="cobroUnidades">0</span> uds.)</td>
+                                <td class="text-end" id="cobroSubtotal">S/ 0.00</td></tr>
+                            <tr class="text-success"><td>Descuentos: volumen<span id="cobroFestivo"></span> (<span id="cobroPct">0</span>%)</td>
+                                <td class="text-end" id="cobroDescuento">- S/ 0.00</td></tr>
+                            <tr class="fw-bold"><td>Total a cobrar</td><td class="text-end" id="cobroTotal">S/ 0.00</td></tr>
+                        </table>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="cobroMetodo">Método de pago</label>
+                                <select class="form-select" id="cobroMetodo" name="metodoPago" required>
+                                    <option value="">-- Seleccione --</option>
+                                    <option th:each="m : ${metodosPagoL}" th:value="${m.key}" th:text="${m.value}">Efectivo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="form-label small fw-semibold d-block">Comprobante</span>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="tipoComprobante" id="compBoleta" value="BOLETA" checked>
+                                    <label class="btn btn-outline-denim btn-sm" for="compBoleta">Boleta</label>
+                                    <input type="radio" class="btn-check" name="tipoComprobante" id="compFactura" value="FACTURA">
+                                    <label class="btn btn-outline-denim btn-sm" for="compFactura">Factura</label>
+                                </div>
+                            </div>
+
+                            <!-- Solo para factura -->
+                            <div class="col-md-5 d-none" data-solo-factura>
+                                <label class="form-label small fw-semibold" for="cobroRuc">RUC</label>
+                                <input type="text" class="form-control" id="cobroRuc" name="ruc" inputmode="numeric"
+                                    maxlength="11" pattern="(10|20)\d{9}" placeholder="11 dígitos">
+                            </div>
+                            <div class="col-md-7 d-none" data-solo-factura>
+                                <label class="form-label small fw-semibold" for="cobroRazon">Razón social</label>
+                                <input type="text" class="form-control" id="cobroRazon" name="razonSocial" maxlength="120">
+                            </div>
+
+                            <!-- Solo para efectivo -->
+                            <div class="col-md-6 d-none" data-solo-efectivo>
+                                <label class="form-label small fw-semibold" for="cobroRecibido">Monto recibido (S/)</label>
+                                <input type="number" class="form-control" id="cobroRecibido" name="montoRecibido"
+                                    min="0" step="0.01">
+                            </div>
+                            <div class="col-md-6 d-none" data-solo-efectivo>
+                                <span class="form-label small fw-semibold d-block">Vuelto</span>
+                                <div class="fs-5 fw-semibold pt-1" id="cobroVuelto">S/ 0.00</div>
+                            </div>
+                        </div>
+                        <div class="form-text mt-3">
+                            Al cobrar se descuenta el stock, se registra la venta y se genera el comprobante en PDF.
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check2-circle me-1"></i>Confirmar cobro</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var form = document.getElementById('formCobro');
+            var modal = document.getElementById('modalCobro');
+            if (!form || !modal) return;
+            var total = 0;
+            var soles = function (n) { return 'S/ ' + Number(n).toFixed(2); };
+
+            // Rellena el modal con los datos del pedido
+            modal.addEventListener('show.bs.modal', function (e) {
+                var b = e.relatedTarget, d = b.dataset;
+                form.reset();
+                form.action = form.getAttribute('data-base') + d.cobroId + '/cobrar';
+                document.getElementById('cobroCodigo').textContent = d.cobroCodigo;
+                document.getElementById('cobroCliente').textContent = d.cobroCliente;
+                document.getElementById('cobroUnidades').textContent = d.cobroUnidades;
+                document.getElementById('cobroSubtotal').textContent = soles(d.cobroSubtotal);
+                document.getElementById('cobroPct').textContent = d.cobroPct;
+                document.getElementById('cobroFestivo').textContent = d.cobroFestivo || '';
+                document.getElementById('cobroDescuento').textContent = '- ' + soles(d.cobroDescuento);
+                document.getElementById('cobroTotal').textContent = soles(d.cobroTotal);
+                total = Number(d.cobroTotal);
+                actualizar();
+            });
+
+            function actualizar() {
+                var factura = document.getElementById('compFactura').checked;
+                var efectivo = document.getElementById('cobroMetodo').value === 'EFECTIVO';
+                form.querySelectorAll('[data-solo-factura]').forEach(function (el) { el.classList.toggle('d-none', !factura); });
+                form.querySelectorAll('[data-solo-efectivo]').forEach(function (el) { el.classList.toggle('d-none', !efectivo); });
+                document.getElementById('cobroRuc').required = factura;
+                document.getElementById('cobroRazon').required = factura;
+                var recibido = document.getElementById('cobroRecibido');
+                recibido.required = efectivo;
+                recibido.min = efectivo ? total.toFixed(2) : 0;
+                var vuelto = (Number(recibido.value) || 0) - total;
+                document.getElementById('cobroVuelto').textContent = soles(vuelto > 0 ? vuelto : 0);
+            }
+            form.addEventListener('change', actualizar);
+            form.addEventListener('input', actualizar);
+            document.getElementById('cobroRuc').addEventListener('input', function (e) {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 11);
+            });
+
+            // Filtro por estado
+            var filtro = document.getElementById('filtroEstadoPedido');
+            if (filtro) {
+                filtro.addEventListener('change', function () {
+                    document.querySelectorAll('#tablaPedidos tbody tr').forEach(function (fila) {
+                        fila.classList.toggle('d-none', !!filtro.value && fila.getAttribute('data-estado') !== filtro.value);
+                    });
+                });
+            }
+        })();
+    </script>
+
+</section>

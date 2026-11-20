@@ -1,0 +1,39 @@
+<div class="card-surface">
+  <div class="card-surface-head flex-wrap gap-2">
+    <div class="d-flex flex-wrap gap-2">
+      <div class="input-group input-group-sm" style="width:240px;">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" id="buscador" class="form-control" placeholder="Buscar por nombre o código...">
+      </div>
+      <select id="filtroCategoria" class="form-select form-select-sm" style="width:160px;">
+        <option value="">Todas las categorías</option>
+      </select>
+      <select id="filtroEstado" class="form-select form-select-sm" style="width:160px;">
+        <option value="">Todos los estados</option>
+        <option value="ok">En stock</option>
+        <option value="low">Stock bajo</option>
+        <option value="out">Agotado</option>
+      </select>
+    </div>
+    <span class="text-muted-soft small" id="contador"></span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-trama mb-0">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Talla</th>
+          <th>Color</th>
+          <th>Ubicación</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tablaInventario"></tbody>
+    </table>
+  </div>
+</div>

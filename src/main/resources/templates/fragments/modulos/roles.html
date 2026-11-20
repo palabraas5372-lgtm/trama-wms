@@ -1,0 +1,116 @@
+<section th:fragment="roles" id="pag-roles" class="d-none" data-modulo="roles">
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card-surface h-100">
+                <div class="card-surface-head">
+                    <h2 class="h6 mb-0">Listado de roles</h2>
+                    <button type="button" class="btn btn-thread btn-sm" data-modal="modalRol" data-modo="nuevo">
+                        <i class="bi bi-plus-lg me-1"></i>Nuevo rol
+                    </button>
+                </div>
+
+                <div th:if="${#lists.isEmpty(rolesL)}" class="empty-state">
+                    <i class="bi bi-shield-lock"></i>
+                    <div class="small mt-1">Aún no hay roles registrados.</div>
+                </div>
+
+                <div class="table-responsive" th:unless="${#lists.isEmpty(rolesL)}">
+                    <table class="table table-trama mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width:70px;">#</th>
+                                <th>Nombre</th>
+                                <th>Usuarios</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${rolesL}">
+                                <td class="text-muted-soft" th:text="${r.idRol}">1</td>
+                                <td class="fw-semibold" th:text="${r.nombre}">Rol</td>
+                                <td>
+                                    <span th:if="${r.usuarios != null and !r.usuarios.isEmpty()}"
+                                        class="badge-status badge-transit"
+                                        th:text="${#lists.size(r.usuarios)} + ' usuario(s)'">0</span>
+                                    <span th:if="${r.usuarios == null or r.usuarios.isEmpty()}"
+                                        class="text-muted-soft small">Sin usuarios</span>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-outline-denim me-1" title="Editar"
+                                        data-modal="modalRol" data-modo="editar"
+                                        th:attr="data-idrol=${r.idRol}, data-nombre=${r.nombre}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <a th:href="@{/roles/eliminar/{id}(id=${r.idRol})}"
+                                        class="btn btn-sm btn-outline-secondary" title="Eliminar"
+                                        th:attr="data-confirm='¿Eliminar el rol ' + ${r.nombre} + '?'">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card-surface h-100">
+                <div class="card-surface-head">
+                    <h2 class="h6 mb-0">Sobre los roles</h2>
+                    <span class="stitch-tag">Referencia</span>
+                </div>
+                <div class="p-3">
+                    <div class="detalle-item mb-2">
+                        <span>Jefe de Almacén</span>
+                        <strong><i class="bi bi-shield-check"></i>Control total del almacén</strong>
+                    </div>
+                    <div class="detalle-item mb-2">
+                        <span>Operador</span>
+                        <strong><i class="bi bi-box-seam"></i>Registra entradas y salidas</strong>
+                    </div>
+                    <div class="detalle-item">
+                        <span>Encargado de Sucursal</span>
+                        <strong><i class="bi bi-shop"></i>Gestiona las solicitudes de su tienda</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL: ROL ══════════════ -->
+    <div class="modal fade" id="modalRol" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/roles/guardar}" method="post">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Seguridad</span>
+                            <h5 class="modal-title fw-display mt-1" id="tituloRol">Registrar rol</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="idRol" value="">
+
+                        <div class="mb-1">
+                            <label class="form-label small fw-semibold" for="rNombre">Nombre del rol</label>
+                            <input type="text" class="form-control" id="rNombre" name="nombre"
+                                placeholder="Ej. Operador" required>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-denim btn-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>

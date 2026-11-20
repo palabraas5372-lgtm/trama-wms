@@ -1,0 +1,153 @@
+<section th:fragment="sucursales" id="pag-sucursales" class="d-none" data-modulo="sucursales">
+
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Sucursales</div>
+                        <div class="kpi-value" th:text="${#lists.size(sucursalesL)}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:var(--fabric-2); color:var(--denim);">
+                        <i class="bi bi-shop"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">En la red TRAMA</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label">Activas</div>
+                        <div class="kpi-value" th:text="${#lists.size(sucursalesL.?[estado == 'activa'])}">0</div>
+                    </div>
+                    <div class="kpi-icon" style="background:var(--success-bg); color:var(--success);">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                </div>
+                <div class="kpi-delta text-muted-soft">Operando con normalidad</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-surface">
+        <div class="card-surface-head">
+            <h2 class="h6 mb-0">Listado de sucursales</h2>
+            <button type="button" class="btn btn-thread btn-sm" data-modal="modalSucursal" data-modo="nuevo">
+                <i class="bi bi-plus-lg me-1"></i>Nueva sucursal
+            </button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(sucursalesL)}" class="empty-state">
+            <i class="bi bi-shop"></i>
+            <div class="small mt-1">Aún no hay sucursales registradas.</div>
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(sucursalesL)}">
+            <table class="table table-trama mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:70px;">#</th>
+                        <th>Nombre</th>
+                        <th>Ciudad</th>
+                        <th>Encargado</th>
+                        <th>Teléfono</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${sucursalesL}">
+                        <td class="text-muted-soft" th:text="${s.idSucursal}">1</td>
+                        <td class="fw-semibold" th:text="${s.nombre}">Sucursal</td>
+                        <td th:text="${s.ciudad}">—</td>
+                        <td class="text-muted-soft" th:text="${s.encargado}">—</td>
+                        <td class="text-muted-soft" th:text="${s.telefono}">—</td>
+                        <td>
+                            <span th:if="${s.estado == 'activa'}" class="badge-status badge-ok">Activa</span>
+                            <span th:unless="${s.estado == 'activa'}" class="badge-status badge-pending"
+                                th:text="${s.estado}">En revisión</span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-denim me-1" title="Editar"
+                                data-modal="modalSucursal" data-modo="editar"
+                                th:attr="data-idsucursal=${s.idSucursal},
+                                         data-nombre=${s.nombre},
+                                         data-ciudad=${s.ciudad},
+                                         data-encargado=${s.encargado},
+                                         data-telefono=${s.telefono},
+                                         data-estado=${s.estado}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <a th:href="@{/sucursales/eliminar/{id}(id=${s.idSucursal})}"
+                                class="btn btn-sm btn-outline-secondary" title="Eliminar"
+                                th:attr="data-confirm='¿Eliminar la sucursal ' + ${s.nombre} + '?'">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL: SUCURSAL ══════════════ -->
+    <div class="modal fade" id="modalSucursal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/sucursales/guardar}" method="post">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Red</span>
+                            <h5 class="modal-title fw-display mt-1" id="tituloSucursal">Registrar sucursal</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="idSucursal" value="">
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="sNombre">Nombre</label>
+                                <input type="text" class="form-control" id="sNombre" name="nombre"
+                                    placeholder="Ej. TRAMA Miraflores" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="sCiudad">Ciudad</label>
+                                <input type="text" class="form-control" id="sCiudad" name="ciudad" placeholder="Lima">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="sEncargado">Encargado</label>
+                                <input type="text" class="form-control" id="sEncargado" name="encargado"
+                                    placeholder="Nombre del encargado">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="sTelefono">Teléfono</label>
+                                <input type="text" class="form-control" id="sTelefono" name="telefono"
+                                    placeholder="01-441-2200">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="sEstado">Estado</label>
+                                <select class="form-select" id="sEstado" name="estado">
+                                    <option value="activa">Activa</option>
+                                    <option value="en revisión">En revisión</option>
+                                    <option value="inactiva">Inactiva</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-denim btn-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>

@@ -1,0 +1,96 @@
+<section th:fragment="ventas" id="pag-ventas" class="d-none" data-modulo="ventas">
+
+    <div class="row g-3 mb-3">
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">Comprobantes emitidos</div>
+                <div class="kpi-value" th:text="${#lists.size(ventasL)}">0</div>
+                <div class="small text-muted-soft"
+                    th:text="${#lists.size(ventasL.?[tipoComprobante == 'BOLETA'])} + ' boletas · ' + ${#lists.size(ventasL.?[tipoComprobante == 'FACTURA'])} + ' facturas'"></div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">Total vendido</div>
+                <div class="kpi-value" style="color:var(--success);"
+                    th:text="'S/ ' + ${#numbers.formatDecimal(reporteTotalGeneral.total, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="kpi-card">
+                <div class="kpi-label">Descuentos otorgados</div>
+                <div class="kpi-value" style="color:var(--thread);"
+                    th:text="'S/ ' + ${#numbers.formatDecimal(reporteTotalGeneral.descuentos, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</div>
+                <a href="#reportes" data-page="reportes" class="small link-denim">Ver reporte por mes / año</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-surface">
+        <div class="card-surface-head">
+            <div>
+                <h2 class="h6 mb-0">Ventas y comprobantes</h2>
+                <div class="small text-muted-soft">Cada venta se registra al cobrar un pedido de cliente.</div>
+            </div>
+            <a href="#pedidos" data-page="pedidos" class="btn btn-sm btn-outline-denim">
+                <i class="bi bi-bag-check me-1"></i>Ir a pedidos
+            </a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(ventasL)}" class="empty-state">
+            <i class="bi bi-receipt"></i>
+            <div class="small mt-1">Aún no hay ventas. Cobra un pedido de cliente para emitir el primer comprobante.</div>
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(ventasL)}">
+            <table class="table table-trama mb-0">
+                <thead>
+                    <tr>
+                        <th>Comprobante</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Pago</th>
+                        <th class="text-end">Subtotal</th>
+                        <th class="text-end">Descuento</th>
+                        <th class="text-end">Total</th>
+                        <th>Pedido</th>
+                        <th class="text-end">PDF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="v : ${ventasL}">
+                        <td class="text-nowrap">
+                            <span class="badge-status" th:classappend="${v.esFactura()} ? 'badge-transit' : 'badge-ok'"
+                                th:text="${v.esFactura()} ? 'Factura' : 'Boleta'">Boleta</span>
+                            <div class="fw-semibold small mt-1" th:text="${v.comprobante}">B001-00000001</div>
+                        </td>
+                        <td class="small text-nowrap" th:text="${#temporals.format(v.fecha, 'dd/MM/yyyy HH:mm')}">—</td>
+                        <td>
+                            <div th:text="${v.esFactura()} ? ${v.razonSocial} : ${v.cliente.nombreCompleto}">Cliente</div>
+                            <div class="small text-muted-soft" th:text="${v.esFactura()} ? 'RUC ' + ${v.ruc} : 'DNI ' + ${v.cliente.dni}"></div>
+                        </td>
+                        <td class="small" th:text="${metodosPagoL[v.metodoPago]}">Efectivo</td>
+                        <td class="text-end text-nowrap" th:text="'S/ ' + ${#numbers.formatDecimal(v.subtotal, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="text-end text-nowrap text-success">
+                            <span th:if="${v.descuentoPct > 0}"
+                                th:text="'- S/ ' + ${#numbers.formatDecimal(v.descuento, 1, 'COMMA', 2, 'POINT')} + ' (' + ${v.descuentoPct} + '%)'"></span>
+                            <div th:if="${v.festivoNombre != null}" class="small text-muted-soft" th:text="'incluye ' + ${v.festivoNombre}"></div>
+                            <span th:if="${v.descuentoPct == 0}" class="text-muted-soft">—</span>
+                        </td>
+                        <td class="text-end fw-semibold text-nowrap" th:text="'S/ ' + ${#numbers.formatDecimal(v.total, 1, 'COMMA', 2, 'POINT')}">0</td>
+                        <td class="small text-nowrap">
+                            <div th:text="${v.pedido.codigo}">PED</div>
+                            <div class="text-muted-soft" th:text="${v.pedido.estado == 'entregado'} ? 'Entregado' : 'Por entregar'"></div>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/ventas/{id}/pdf(id=${v.idVenta})}" target="_blank" class="btn btn-sm btn-outline-denim">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>

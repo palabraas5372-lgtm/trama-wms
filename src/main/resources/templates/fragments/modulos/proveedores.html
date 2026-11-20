@@ -1,0 +1,108 @@
+<section th:fragment="proveedores" id="pag-proveedores" class="d-none" data-modulo="proveedores">
+
+    <div class="card-surface">
+        <div class="card-surface-head">
+            <h2 class="h6 mb-0">Listado de proveedores</h2>
+            <button type="button" class="btn btn-thread btn-sm" data-modal="modalProveedor" data-modo="nuevo">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo proveedor
+            </button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(proveedoresL)}" class="empty-state">
+            <i class="bi bi-truck"></i>
+            <div class="small mt-1">Aún no hay proveedores registrados.</div>
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(proveedoresL)}">
+            <table class="table table-trama mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:70px;">#</th>
+                        <th>Nombre</th>
+                        <th>Contacto</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="pr : ${proveedoresL}">
+                        <td class="text-muted-soft" th:text="${pr.idProveedor}">1</td>
+                        <td class="fw-semibold" th:text="${pr.nombre}">Proveedor</td>
+                        <td th:text="${pr.contacto}">—</td>
+                        <td class="text-muted-soft" th:text="${pr.telefono}">—</td>
+                        <td class="text-muted-soft" th:text="${pr.email}">—</td>
+                        <td class="text-end text-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-denim me-1" title="Editar"
+                                data-modal="modalProveedor" data-modo="editar"
+                                th:attr="data-idproveedor=${pr.idProveedor},
+                                         data-nombre=${pr.nombre},
+                                         data-contacto=${pr.contacto},
+                                         data-telefono=${pr.telefono},
+                                         data-email=${pr.email}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <a th:href="@{/proveedores/eliminar/{id}(id=${pr.idProveedor})}"
+                                class="btn btn-sm btn-outline-secondary" title="Eliminar"
+                                th:attr="data-confirm='¿Eliminar el proveedor ' + ${pr.nombre} + '?'">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL: PROVEEDOR ══════════════ -->
+    <div class="modal fade" id="modalProveedor" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/proveedores/guardar}" method="post">
+                    <div class="modal-header">
+                        <div>
+                            <span class="stitch-tag">Catálogo</span>
+                            <h5 class="modal-title fw-display mt-1" id="tituloProveedor">Registrar proveedor</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" name="idProveedor" value="">
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold" for="prNombre">Nombre</label>
+                                <input type="text" class="form-control" id="prNombre" name="nombre"
+                                    placeholder="Ej. Proveedor Textil Andina" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="prContacto">Contacto</label>
+                                <input type="text" class="form-control" id="prContacto" name="contacto"
+                                    placeholder="Nombre del contacto">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold" for="prTelefono">Teléfono</label>
+                                <input type="text" class="form-control" id="prTelefono" name="telefono"
+                                    placeholder="01-500-1111">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold" for="prEmail">Email</label>
+                                <input type="email" class="form-control" id="prEmail" name="email"
+                                    placeholder="ventas@proveedor.pe">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-denim btn-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>

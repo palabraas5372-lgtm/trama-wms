@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/img/favicon.svg}">
+    <title>TRAMA · Crear cuenta</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/styles.css}">
+</head>
+
+<body>
+    <div class="login-shell d-flex flex-column flex-lg-row">
+
+        <!-- Panel izquierdo: marca -->
+        <div class="login-brand">
+            <div>
+                <div class="brand-mark">
+                    <svg class="needle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 20L15 9" stroke="#E8A33D" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="17.5" cy="6.5" r="3" stroke="#E8A33D" stroke-width="2" />
+                        <path d="M2.5 21.5L4.5 19.5" stroke="#E8A33D" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>TRAMA</span>
+                </div>
+                <div class="brand-sub mt-1">Distribución textil</div>
+            </div>
+
+            <div>
+                <h2 class="text-white mb-3" style="max-width:380px;">Crea tu cuenta en TRAMA.</h2>
+                <p class="text-dim" style="max-width:380px;">
+                    Tu solicitud quedará <strong>pendiente</strong> hasta que un administrador la revise y la
+                    active. Después podrás ingresar con tu usuario y clave.
+                </p>
+                <div class="stitch-row mt-4">
+                    <span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <div class="text-dim" style="font-size:.8rem;">© 2026 TRAMA S.A. — Almacén Central</div>
+        </div>
+
+        <!-- Panel derecho: formulario de registro -->
+        <div class="login-form-side">
+            <div class="login-card login-card-wide">
+                <a th:href="@{/}" class="small link-denim d-inline-block mb-3">
+                    <i class="bi bi-arrow-left me-1"></i>Volver al inicio de sesión
+                </a><br>
+                <span class="stitch-tag">Registro de usuario</span>
+                <h1 class="fw-display mt-2 mb-1" style="font-size:1.6rem;">Crear cuenta</h1>
+                <p class="text-muted-soft mb-4">Completa tus datos. Todos los campos son obligatorios.</p>
+
+                <div th:if="${error}" class="alert alert-danger py-2 small" role="alert">
+                    <i class="bi bi-exclamation-triangle me-1"></i><span th:text="${error}">Error</span>
+                </div>
+
+                <form th:action="@{/registro}" th:object="${form}" method="post" id="formRegistro">
+                    <div class="row g-3">
+
+                        <div class="col-sm-5">
+                            <label for="rDni" class="form-label small fw-semibold">DNI</label>
+                            <input type="text" class="form-control" id="rDni" th:field="*{dni}"
+                                inputmode="numeric" maxlength="8" pattern="\d{8}" placeholder="8 dígitos"
+                                data-verificar="dni" required>
+                            <div class="disponibilidad" data-para="dni"></div>
+                        </div>
+
+                        <div class="col-sm-7">
+                            <label for="rUsuario" class="form-label small fw-semibold">Usuario</label>
+                            <input type="text" class="form-control" id="rUsuario" th:field="*{usuario}"
+                                maxlength="40" pattern="[A-Za-z0-9._\-]{4,40}" placeholder="ej. mquispe"
+                                autocomplete="username" data-verificar="usuario" required>
+                            <div class="disponibilidad" data-para="usuario"></div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="rNombres" class="form-label small fw-semibold">Nombres</label>
+                            <input type="text" class="form-control" id="rNombres" th:field="*{nombres}"
+                                maxlength="60" required>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="rApellidos" class="form-label small fw-semibold">Apellidos</label>
+                            <input type="text" class="form-control" id="rApellidos" th:field="*{apellidos}"
+                                maxlength="60" required>
+                        </div>
+
+                        <div class="col-sm-5">
+                            <label for="rTelefono" class="form-label small fw-semibold">Teléfono (celular)</label>
+                            <input type="tel" class="form-control" id="rTelefono" th:field="*{telefono}"
+                                inputmode="numeric" maxlength="9" pattern="9\d{8}" placeholder="9 dígitos, ej. 987654321"
+                                data-verificar="telefono" required>
+                            <div class="disponibilidad" data-para="telefono"></div>
+                        </div>
+
+                        <div class="col-sm-7">
+                            <label for="rCorreo" class="form-label small fw-semibold">Correo electrónico</label>
+                            <input type="email" class="form-control" id="rCorreo" th:field="*{correo}"
+                                maxlength="100" placeholder="tucorreo@gmail.com" autocomplete="email"
+                                pattern="[A-Za-z0-9._%+\-]+@gmail\.com" title="Debe terminar en @gmail.com"
+                                data-verificar="correo" required>
+                            <div class="form-text">Solo cuentas de Gmail (@gmail.com).</div>
+                            <div class="disponibilidad" data-para="correo"></div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="rClave" class="form-label small fw-semibold">Clave</label>
+                            <input type="password" class="form-control" id="rClave" name="clave" minlength="6"
+                                autocomplete="new-password" placeholder="Mínimo 6 caracteres" required>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="rClave2" class="form-label small fw-semibold">Confirmar clave</label>
+                            <input type="password" class="form-control" id="rClave2" minlength="6"
+                                autocomplete="new-password" required>
+                        </div>
+
+                        <!-- Perfil: lista desplegable cargada desde la tabla "perfiles" -->
+                        <div class="col-sm-6">
+                            <label for="rPerfil" class="form-label small fw-semibold">Perfil</label>
+                            <select class="form-select" id="rPerfil" th:field="*{perfil}" required>
+                                <option value="">-- Seleccione --</option>
+                                <option th:each="p : ${perfilesL}" th:value="${p.idPerfil}"
+                                    th:text="${#strings.capitalize(p.nombre)}">Cliente</option>
+                            </select>
+                        </div>
+
+                        <!-- Almacén a contactar: lista cargada desde la tabla "sucursales" (solo activas) -->
+                        <div class="col-12">
+                            <label for="rAlmacen" class="form-label small fw-semibold">Almacén para tus pedidos</label>
+                            <select class="form-select" id="rAlmacen" th:field="*{sucursal}" required>
+                                <option value="">-- Seleccione el almacén que contactarás --</option>
+                                <option th:each="s : ${almacenesL}" th:value="${s.idSucursal}"
+                                    th:text="${s.nombre} + ' — ' + ${s.ciudad} + (${s.telefono} != null ? ' · Tel. ' + ${s.telefono} : '')">
+                                    Almacén</option>
+                            </select>
+                            <div class="form-text">Este almacén atenderá tus pedidos y será tu contacto directo.</div>
+                        </div>
+
+                        <!-- Estado: siempre "pendiente" al registrarse (solo un administrador activa) -->
+                        <div class="col-sm-6">
+                            <span class="form-label small fw-semibold d-block">Estado</span>
+                            <div class="estado-fijo">
+                                <span class="badge-status badge-low">Pendiente</span>
+                                <span class="text-muted-soft small">Lo activa un administrador</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-denim w-100 py-2 fw-semibold mt-4">
+                        <i class="bi bi-person-plus me-1"></i>Registrarme
+                    </button>
+                </form>
+
+                <hr class="stitch-divider my-4">
+                <p class="text-center small mb-0 text-muted-soft">
+                    ¿Ya tienes una cuenta? <a th:href="@{/}" class="fw-semibold link-denim">Inicia sesión</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        (function () {
+            var urlDisponible = /*[[@{/registro/disponible}]]*/ '/registro/disponible';
+            var form = document.getElementById('formRegistro');
+            var clave = document.getElementById('rClave');
+            var clave2 = document.getElementById('rClave2');
+            var ocupados = {};
+
+            // Solo dígitos en el DNI y el teléfono
+            [ ['rDni', 8], ['rTelefono', 9] ].forEach(function (par) {
+                document.getElementById(par[0]).addEventListener('input', function (e) {
+                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, par[1]);
+                });
+            });
+
+            // Consulta en vivo si el DNI / usuario ya existe en la BD
+            form.querySelectorAll('[data-verificar]').forEach(function (campo) {
+                campo.addEventListener('blur', function () { verificar(campo); });
+            });
+
+            function verificar(campo) {
+                var tipo = campo.getAttribute('data-verificar');
+                var aviso = form.querySelector('.disponibilidad[data-para="' + tipo + '"]');
+                var valor = campo.value.trim();
+                aviso.className = 'disponibilidad';
+                aviso.textContent = '';
+                ocupados[tipo] = false;
+                campo.setCustomValidity('');
+                if (!campo.checkValidity() || !valor) return;
+
+                fetch(urlDisponible + '?campo=' + tipo + '&valor=' + encodeURIComponent(valor))
+                    .then(function (r) { return r.json(); })
+                    .then(function (r) {
+                        var etiqueta = { dni: 'DNI', usuario: 'usuario', telefono: 'teléfono', correo: 'correo' }[tipo];
+                        if (r.disponible) {
+                            aviso.classList.add('ok');
+                            aviso.innerHTML = '<i class="bi bi-check-circle"></i> ' + etiqueta + ' disponible';
+                        } else {
+                            ocupados[tipo] = true;
+                            aviso.classList.add('ocupado');
+                            aviso.innerHTML = '<i class="bi bi-x-circle"></i> Este ' + etiqueta + ' ya está registrado';
+                            campo.setCustomValidity('Ya registrado');
+                        }
+                    })
+                    .catch(function () { /* el servidor vuelve a validar al enviar */ });
+            }
+
+            form.addEventListener('submit', function (e) {
+                clave2.setCustomValidity(clave.value === clave2.value ? '' : 'Las claves no coinciden');
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    form.reportValidity();
+                }
+            });
+            clave2.addEventListener('input', function () { clave2.setCustomValidity(''); });
+        })();
+    </script>
+</body>
+
+</html>
